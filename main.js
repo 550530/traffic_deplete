@@ -155,81 +155,6 @@ function checkURL(URL) {
     }
 }
 
-var cnip = ''
-
-function ipcn() {
-    if (visibl) {
-        fetch('https://myip.ipip.net')
-            .then(response => response.text())  // 获取纯文本格式
-            .then(text => {
-                const tag = document.getElementById("ipcn");
-                // 解析返回的文本，提取 IP 地址和其他信息
-                const ipInfo = parseIpInfo(text);
-
-                tag.innerText = `${ipInfo.ip} ${ipInfo.country} ${ipInfo.region} ${ipInfo.city} ${ipInfo.isp}`;
-
-                if (ipInfo.ip !== cnip) {
-                    tag.style.color = '';
-                    ckip(ipInfo.ip, tag);
-                }
-                cnip = ipInfo.ip;
-            })
-            .catch(error => {
-                console.error("IP 获取失败:", error);
-            });
-    }
-    setTimeout(ipcn, 5000);
-}
-
-// 解析返回的文本格式
-function parseIpInfo(text) {
-    const regex = /当前 IP：(\S+)  来自于：([^ ]+) ([^ ]+) ([^ ]+)  (\S+)/;
-    const match = text.match(regex);
-
-    if (match) {
-        return {
-            ip: match[1],
-            country: match[2],
-            region: match[3],
-            city: match[4],
-            isp: match[5]
-        };
-    }
-
-    return {
-        ip: '未知',
-        country: '未知',
-        region: '未知',
-        city: '未知',
-        isp: '未知'
-    };
-}
-
-var gbip = ""
-
-function ipgb() {
-    if (visibl) {
-        fetch('https://ipinfo.io/json')
-            .then(response => response.json())
-            .then(data => {
-                var tag = document.getElementById("ipgb");
-                tag.innerText = data['ip'] + ' ' + data['country'] + ' ' + data['region'] + ' ' + data['city'] + ' ' + data['hostname'];
-                
-                if (data['ip'] !== gbip) {
-                    tag.style.color = '';
-                    ckip(data['ip'], tag);
-                }
-                gbip = data['ip'];
-            })
-            .catch(error => {
-                console.error("IP 获取失败:", error);
-            });
-    }
-    setTimeout(ipgb, refresh_lay);
-}
-
-
-
 function laycn() {
     if (visibl) {
         var start_ti = new Date().getTime();
@@ -285,8 +210,6 @@ function layyoutube() {
 }
 
 
-ipcn()
-ipgb()
 laycn()
 laygb()
 laygithub()
