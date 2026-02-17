@@ -1,233 +1,428 @@
 <!DOCTYPE html>
-<html lang="zh" class="js">
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>流量消耗器</title>
-<meta name="keywords" content="IP查询,IP归属查询,在线测速,网速测试,多地IP查询,流量消耗器">
-<meta name="description" content="测试您的网速，同时具备网络延迟实时检测">
-<meta http-equiv="Cache-Control" content="no-store">
-
-<link rel="stylesheet" href="res/dashlite.css">
-<link rel="stylesheet" href="res/style.css">
-<link rel="shortcut icon" href="images/favicon.ico">
-<link rel="stylesheet" href="res/layer.css">
-
-<script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-
-<style>
-.stat{width:100%;column-gap:1rem;padding:1rem 1.5rem;}
-.stat-title{white-space:nowrap;opacity:.6;}
-.stat-value{white-space:nowrap;grid-column-start:1;font-size:1.8rem;font-weight:700;line-height:2.5rem;}
-.nk-menu-item a{text-decoration:none;}
-.header-center-tools{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
-.header-center-tools a{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;}
-.header-center-tools .icon{font-size:18px;}
-.header-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;}
-.header-left{justify-self:start;display:flex;align-items:center;gap:10px;}
-.header-center{justify-self:center;}
-.header-right{justify-self:end;}
-.ip-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);}
-.ip-row:last-child{border-bottom:0;}
-.ip-label{opacity:.75;}
-.ip-value{text-align:right;word-break:break-all;}
-.ip-loc{opacity:.7;margin-left:6px;}
-.muted{opacity:.7;font-size:12px;}
-.page-footer{text-align:center;padding:18px 12px 30px;opacity:.75;font-size:13px;}
-.page-footer a{text-decoration:none;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>流量消耗器（完全修复版）</title>
+  <meta name="description" content="流量消耗与测速工具，支持中文IP归属显示（IPv4）" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+  <style>
+    :root { --card-bg: #fff; --bg: #f5f6fa; --text: #2b2b2b; --muted: #6b7280; --primary:#4f6ef7; }
+    body { background: var(--bg); color: var(--text); }
+    .wrap { max-width: 980px; margin: 22px auto 40px; padding: 0 12px; }
+    .topbar {
+      background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .brand { font-weight: 700; font-size: 24px; letter-spacing: .5px; }
+    .top-actions {
+      display: flex; align-items: center; justify-content: center; gap: 28px; flex: 1;
+    }
+    .top-actions a {
+      color: #4a5b7c; text-decoration: none; font-weight: 600; white-space: nowrap;
+    }
+    .cardx {
+      margin-top: 16px; background: var(--card-bg); border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 18px;
+    }
+    .title-chip {
+      display: inline-block; background: var(--primary); color: #fff; font-weight: 700;
+      border-radius: 10px; padding: 8px 14px; margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(79,110,247,.35);
+    }
+    .form-label { font-weight: 700; margin-bottom: 8px; }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 16px;
+    }
+    .stat-box {
+      background: #fafbff; border: 1px solid #e9ecf5; border-radius: 10px; padding: 12px;
+    }
+    .stat-name { color: var(--muted); font-size: 13px; }
+    .stat-value { font-size: 22px; font-weight: 700; margin-top: 6px; }
+    .ip-row {
+      display: grid; grid-template-columns: 90px 1fr;
+      gap: 10px; padding: 7px 0; border-bottom: 1px dashed #eceff6;
+    }
+    .ip-row:last-child { border-bottom: none; }
+    .ip-k { color: #4b5563; font-weight: 700; }
+    .ip-v { color: #1f2937; word-break: break-all; }
+    .muted { color: var(--muted); }
+    .btn-primary {
+      background: #5b78ff; border-color: #5b78ff;
+    }
+    .btn-primary:disabled {
+      background: #aeb8e9; border-color: #aeb8e9; cursor: not-allowed;
+    }
+    .small-note { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    .row-gap { row-gap: 10px; }
+    @media (max-width: 768px){
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .top-actions { width: 100%; justify-content: center; }
+      .stat-grid { grid-template-columns: 1fr; }
+      .ip-row { grid-template-columns: 70px 1fr; }
+    }
+  </style>
 </head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">流量消耗器</div>
+      <div class="top-actions">
+        <a href="https://ip.ipgg.cn" target="_blank" rel="noopener">IP归属查询</a>
+        <a href="https://v6test.ipgg.cn" target="_blank" rel="noopener">IPV6检测</a>
+        <a href="javascript:void(0)" id="themeToggle">夜间模式</a>
+      </div>
+    </div>
 
-<body class="nk-body npc-invest bg-lighter no-touch nk-nio-theme" style="cursor:pointer">
-<div class="nk-wrap">
+    <div class="cardx">
+      <div class="title-chip">测试设置</div>
 
-<div class="nk-header nk-header-fluid nk-header-fixed is-light">
-<div class="container-xl">
-<div class="nk-header-wrap link-between" style="width:100%;">
-<div class="header-grid">
+      <div class="form-group">
+        <label class="form-label" for="sourceSelect">测试地址</label>
+        <select id="sourceSelect" class="form-control">
+          <optgroup label="国内测速点">
+            <option value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4" selected>
+              朝夕光年游戏(打开网页默认首选项)
+            </option>
+          </optgroup>
+          <optgroup label="国外测速点">
+            <option value="https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js">BBC中文网</option>
+          </optgroup>
+        </select>
+      </div>
 
-<div class="header-left">
-<div class="nk-menu-trigger mr-sm-2 d-lg-none">
-<a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav">
-<em class="icon ni ni-menu"></em>
-</a>
-</div>
-<div class="nk-header-brand">
-<a href="#" class="logo-link text-base">
-<img src="images/流量.png" class="hide-mb-sm">
-流量消耗器
-</a>
-</div>
-</div>
+      <div class="form-group">
+        <label class="form-label" for="customUrl">自定义下载地址</label>
+        <input id="customUrl" type="url" class="form-control" placeholder="可选：输入后优先使用该链接（必须可直链下载）" />
+        <div class="small-note">如填写了自定义地址，将优先使用自定义地址；留空则使用上面的测速点。</div>
+      </div>
 
-<div class="header-center">
-<div class="header-center-tools">
-<a href="https://ip.ipgg.cn" class="nk-menu-link nk-ibx-action-item" target="_blank">
-<em class="icon ni ni-map"></em>
-<span class="nk-menu-text">IP归属查询</span>
-</a>
-<a href="https://v6test.ipgg.cn" class="nk-menu-link nk-ibx-action-item" target="_blank">
-<em class="icon ni ni-network"></em>
-<span class="nk-menu-text">IPV6检测</span>
-</a>
-<a href="javascript:;" class="progress-rating dark-switch">
-<span class="nk-menu-icon">
-<em class="icon ni ni-moon"></em>
-<em class="icon ni ni-sun d-none"></em>
-</span>
-</a>
-</div>
-</div>
+      <div class="form-group">
+        <label class="form-label" for="thread">线程（1-16）</label>
+        <input id="thread" type="number" class="form-control" min="1" max="16" value="1" />
+      </div>
 
-<div class="header-right"></div>
+      <div class="d-flex row-gap" style="gap:10px;flex-wrap:wrap;">
+        <button id="startBtn" class="btn btn-primary flex-grow-1">开始</button>
+        <button id="stopBtn" class="btn btn-outline-danger flex-grow-1" disabled>停止</button>
+      </div>
 
-</div>
-</div>
-</div>
-</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-name">总流量</div>
+          <div class="stat-value" id="total">0 B</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-name">实时速度</div>
+          <div class="stat-value" id="speed">0 B/s</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-name">实时带宽</div>
+          <div class="stat-value" id="mbps">0 Mbps</div>
+        </div>
+      </div>
+    </div>
 
-<div class="nk-content nk-content-lg nk-content-fluid" style="padding-top:90px;">
-<div id="app" class="container-xl">
-<div class="col-sm-12 col-md-10 col-xl-8 center-block">
+    <div class="cardx">
+      <div class="title-chip">出口地址（仅IPv4）</div>
+      <div class="ip-row">
+        <div class="ip-k">IPv4</div>
+        <div class="ip-v" id="ip4">加载中...</div>
+      </div>
+      <div class="ip-row">
+        <div class="ip-k">属地</div>
+        <div class="ip-v" id="loc4">加载中...</div>
+      </div>
+      <div class="small-note muted">说明：仅显示 IPv4，已移除国内/海外 IPv6 项。</div>
+    </div>
 
-<div class="card card-preview">
-<div class="card-inner">
-<div class="nya-title nk-ibx-action-item progress-rating">
-<em class="icon ni ni-info"></em>
-<span class="nk-menu-text font-weight-bold">工具说明</span>
-</div>
-<div class="accordion-inner">
-<div class="title"><span class="dot dot-lg sq"></span>&nbsp;<span>虽支持可自定义地址，但无法请求跨域链接</span></div>
-<div class="title"><span class="dot dot-lg sq"></span>&nbsp;<span>速度不满意？请尝试手动切换测速源，加大运行线程</span></div>
-</div>
-</div>
-</div>
+    <div class="cardx">
+      <div class="title-chip">项目来源</div>
+      <div class="muted">本页面基于开源项目：<a href="https://github.com/xinycai/traffic_deplete" target="_blank" rel="noopener">xinycai/traffic_deplete</a></div>
+    </div>
+  </div>
 
-<div class="card card-preview">
-<div class="card-inner mt-3">
-<div class="nya-title nk-ibx-action-item progress-rating">
-<em class="icon ni ni-setting"></em>
-<span class="nk-menu-text font-weight-bold">测试设置</span>
-</div>
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
 
-<div class="form-group">
-<label class="form-label">测试地址</label>
-<div class="form-control-wrap">
-<select id="select" onchange="document.getElementById('link').value=this.options[this.selectedIndex].value;setCookie('select',this.selectedIndex,365);" class="form-control">
-<option value="" id="diy">自定义</option>
+      const sourceSelect = $('sourceSelect');
+      const customUrl = $('customUrl');
+      const threadInput = $('thread');
+      const startBtn = $('startBtn');
+      const stopBtn = $('stopBtn');
 
-<optgroup label="国内测速点">
-<option selected value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4">
-朝夕光年游戏(点击此处可更换测速源)
-</option>
-</optgroup>
+      const totalEl = $('total');
+      const speedEl = $('speed');
+      const mbpsEl = $('mbps');
+      const ip4El = $('ip4');
+      const loc4El = $('loc4');
 
-<optgroup label="国外测速点">
-<option value="https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js">BBC中文网</option>
-</optgroup>
+      let running = false;
+      let totalBytes = 0;
+      let secBytes = 0;
+      let workers = [];
+      let statTimer = null;
 
-</select>
+      const MAX_REDIRECT = 5;
 
-<input value=""
-oninput="document.getElementById('select').selectedIndex=0;document.getElementById('diy').value=this.value;setCookie('diy',this.value,365);setCookie('select',0,365);"
-type="text" id="link" placeholder="请输入下载链接" autocomplete="off" class="form-control">
-</div>
-</div>
+      function formatBytes(n) {
+        if (!Number.isFinite(n) || n < 0) return '0 B';
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let i = 0;
+        let v = n;
+        while (v >= 1024 && i < units.length - 1) {
+          v /= 1024;
+          i++;
+        }
+        return `${v.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+      }
 
-<div class="form-group">
-<label class="form-label">线程</label>
-<div class="form-control-wrap number-spinner-wrap">
-<button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.min)thread.value--;" class="btn btn-icon btn-outline-primary number-spinner-btn number-minus"><em class="icon ni ni-minus"></em></button>
-<input onchange="var self=document.getElementById('thread');if(self.value<self.min)self.value=self.min;if(self.value>self.max)self.value=self.max" id="thread" type="number" min="1" max="32" value="1" class="form-control number-spinner">
-<button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.max)thread.value++;" class="btn btn-icon btn-outline-primary number-spinner-btn number-plus"><em class="icon ni ni-plus"></em></button>
-</div>
-</div>
+      function toMbps(bytesPerSec) {
+        return ((bytesPerSec * 8) / 1024 / 1024).toFixed(2);
+      }
 
-<button onclick="botton_clicked();" type="button" id="do" class="btn btn-dim btn-outline-secondary btn-block card-link">开始</button>
+      function getTargetUrl() {
+        const custom = customUrl.value.trim();
+        if (custom) return custom;
+        return sourceSelect.value.trim();
+      }
 
-</div>
-</div>
+      function normalizeThread(v) {
+        let n = Number(v);
+        if (!Number.isFinite(n)) n = 1;
+        n = Math.floor(n);
+        if (n < 1) n = 1;
+        if (n > 16) n = 16;
+        return n;
+      }
 
-<div class="card card-preview">
-<div class="card-inner">
-<div class="nya-title nk-ibx-action-item progress-rating">
-<em class="icon ni ni-location"></em>
-<span class="nk-menu-text font-weight-bold">出口地址</span>
-</div>
+      async function fetchLoop(url, signal) {
+        while (running && !signal.aborted) {
+          try {
+            const resp = await fetch(url, {
+              method: 'GET',
+              cache: 'no-store',
+              redirect: 'follow',
+              signal
+            });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            if (!resp.body) {
+              const buf = await resp.arrayBuffer();
+              const len = buf.byteLength || 0;
+              totalBytes += len;
+              secBytes += len;
+              continue;
+            }
+            const reader = resp.body.getReader();
+            while (running && !signal.aborted) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              const len = value ? value.byteLength : 0;
+              totalBytes += len;
+              secBytes += len;
+            }
+          } catch (e) {
+            await new Promise(r => setTimeout(r, 400));
+          }
+        }
+      }
 
-<div style="margin-top:10px;">
-<div class="ip-row">
-<div class="ip-label">IPv4</div>
-<div class="ip-value">
-<span id="ipv4">Loading...</span>
-<span id="ipv4_loc" class="ip-loc"></span>
-</div>
-</div>
-</div>
+      function setRunningUI(isRunning) {
+        startBtn.disabled = isRunning;
+        stopBtn.disabled = !isRunning;
+        sourceSelect.disabled = isRunning;
+        customUrl.disabled = isRunning;
+        threadInput.disabled = isRunning;
+      }
 
-</div>
-</div>
+      function startStatTimer() {
+        if (statTimer) clearInterval(statTimer);
+        statTimer = setInterval(() => {
+          const s = secBytes;
+          secBytes = 0;
+          totalEl.textContent = formatBytes(totalBytes);
+          speedEl.textContent = `${formatBytes(s)}/s`;
+          mbpsEl.textContent = `${toMbps(s)} Mbps`;
+        }, 1000);
+      }
 
-<div class="page-footer">
-本页面基于开源项目：
-<a href="https://github.com/xinycai/traffic_deplete" target="_blank">xinycai/traffic_deplete</a>
-</div>
+      function stopStatTimer() {
+        if (statTimer) {
+          clearInterval(statTimer);
+          statTimer = null;
+        }
+      }
 
-</div>
-</div>
-</div>
-</div>
+      async function start() {
+        if (running) return;
 
-<audio controls id="music" loop style="display:none">
-<source src="res/background.mp3" type="audio/mpeg">
-</audio>
+        const url = getTargetUrl();
+        if (!url) {
+          alert('测速地址为空，请选择测速点或填写自定义链接');
+          return;
+        }
 
-<script src="main.js?5"></script>
-<script src="js/jquery.min.js"></script>
-<script src="js/bootstrap.bundle.min.js"></script>
-<script src="js/layer.js"></script>
-<script src="js/nioapp.min.js"></script>
-<script src="js/script.js"></script>
-<script src="js/common.js"></script>
+        try {
+          new URL(url);
+        } catch {
+          alert('测速地址格式不正确');
+          return;
+        }
 
-<script>
-function extractIpv4(text){const m=(text||'').match(/(\d{1,3}\.){3}\d{1,3}/);return m?m[0]:'';}
+        const thread = normalizeThread(threadInput.value);
+        threadInput.value = String(thread);
 
-async function fetchIpv4(){
-try{const r=await fetch('https://api.ipify.org?format=json');const j=await r.json();if(j.ip)return j.ip;}catch(e){}
-try{const r=await fetch('https://v4.ipgg.cn');const t=await r.text();const ip=extractIpv4(t.trim());if(ip)return ip;}catch(e){}
-return '';
-}
+        running = true;
+        setRunningUI(true);
 
-async function geoZh(ip){
-if(!ip)return '';
-try{
-const url='https://webapi-pc.meitu.com/common/ip_location?ip='+encodeURIComponent(ip);
-const r=await fetch(url);
-const j=await r.json();
-const d=j?.data?.[ip];
-if(j?.code===0&&d){
-const parts=[d.nation,d.province,d.city,d.isp].filter(Boolean);
-return parts.length?`（${parts.join(' ')}）`:'';
-}
-}catch(e){}
-return '';
-}
+        totalBytes = 0;
+        secBytes = 0;
+        totalEl.textContent = '0 B';
+        speedEl.textContent = '0 B/s';
+        mbpsEl.textContent = '0 Mbps';
 
-async function loadIpv4AndLoc(){
-const ipv4El=document.getElementById('ipv4');
-const locEl=document.getElementById('ipv4_loc');
-ipv4El.textContent='Loading...';
-locEl.textContent='';
-const ip=await fetchIpv4();
-if(!ip){ipv4El.textContent='NULL';return;}
-ipv4El.textContent=ip;
-const loc=await geoZh(ip);
-locEl.textContent=loc||'';
-}
+        startStatTimer();
 
-document.addEventListener('DOMContentLoaded',loadIpv4AndLoc);
-</script>
+        workers = Array.from({ length: thread }, () => {
+          const controller = new AbortController();
+          fetchLoop(url, controller.signal);
+          return controller;
+        });
+      }
 
+      function stop() {
+        if (!running) return;
+        running = false;
+        for (const c of workers) {
+          try { c.abort(); } catch {}
+        }
+        workers = [];
+        stopStatTimer();
+        setRunningUI(false);
+      }
+
+      async function fetchIPv4() {
+        const ipv4Apis = [
+          'https://api.ipify.org?format=json',
+          'https://ipv4.icanhazip.com',
+          'https://ifconfig.me/ip'
+        ];
+
+        for (const api of ipv4Apis) {
+          try {
+            const res = await fetch(api, { cache: 'no-store' });
+            if (!res.ok) continue;
+            let ip = '';
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
+            if (ct.includes('application/json')) {
+              const j = await res.json();
+              ip = (j.ip || '').trim();
+            } else {
+              ip = (await res.text()).trim();
+            }
+            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return ip;
+          } catch {}
+        }
+        return '';
+      }
+
+      async function fetchLocationCN(ip) {
+        const geoApis = [
+          `https://whois.pconline.com.cn/ipJson.jsp?ip=${encodeURIComponent(ip)}&json=true`,
+          `https://opendata.baidu.com/api.php?query=${encodeURIComponent(ip)}&co=&resource_id=6006&oe=utf8`
+        ];
+
+        for (const api of geoApis) {
+          try {
+            const res = await fetch(api, { cache: 'no-store' });
+            if (!res.ok) continue;
+            const text = await res.text();
+
+            if (api.includes('whois.pconline.com.cn')) {
+              const clean = text.replace(/^\uFEFF/, '').trim();
+              let j;
+              try { j = JSON.parse(clean); } catch { continue; }
+              const p = (j.pro || '').trim();
+              const c = (j.city || '').trim();
+              const addr = (j.addr || '').replace(/\s+/g, ' ').trim();
+              const merged = [p, c].filter(Boolean).join(' ');
+              const finalText = (merged || addr || '').replace(/^中国\s*/,'').trim();
+              if (finalText) return finalText;
+            } else if (api.includes('opendata.baidu.com')) {
+              const j = JSON.parse(text);
+              const item = j?.data?.[0];
+              if (item) {
+                const loc = `${item.location || ''} ${item.titlecont || ''}`.replace(/\s+/g, ' ').trim();
+                if (loc) return loc;
+              }
+            }
+          } catch {}
+        }
+        return '未知地区';
+      }
+
+      async function initIPBlock() {
+        ip4El.textContent = '加载中...';
+        loc4El.textContent = '加载中...';
+
+        const ip = await fetchIPv4();
+        if (!ip) {
+          ip4El.textContent = '获取失败';
+          loc4El.textContent = '获取失败';
+          return;
+        }
+
+        ip4El.textContent = ip;
+        const loc = await fetchLocationCN(ip);
+        loc4El.textContent = loc || '未知地区';
+      }
+
+      function initTheme() {
+        const key = 'llxh_dark';
+        const btn = $('themeToggle');
+        const setDark = (on) => {
+          if (on) {
+            document.documentElement.style.setProperty('--bg', '#0f172a');
+            document.documentElement.style.setProperty('--card-bg', '#111827');
+            document.documentElement.style.setProperty('--text', '#e5e7eb');
+            document.documentElement.style.setProperty('--muted', '#9ca3af');
+          } else {
+            document.documentElement.style.setProperty('--bg', '#f5f6fa');
+            document.documentElement.style.setProperty('--card-bg', '#fff');
+            document.documentElement.style.setProperty('--text', '#2b2b2b');
+            document.documentElement.style.setProperty('--muted', '#6b7280');
+          }
+        };
+        const saved = localStorage.getItem(key) === '1';
+        setDark(saved);
+        btn.addEventListener('click', () => {
+          const now = localStorage.getItem(key) === '1';
+          const next = !now;
+          localStorage.setItem(key, next ? '1' : '0');
+          setDark(next);
+        });
+      }
+
+      startBtn.addEventListener('click', start);
+      stopBtn.addEventListener('click', stop);
+
+      sourceSelect.addEventListener('change', () => {
+        if (!customUrl.value.trim()) {
+          // 默认跟随下拉变化，开始按钮无需任何额外逻辑始终可点
+        }
+      });
+
+      customUrl.addEventListener('input', () => {
+        // 允许空输入；空时自动回落到下拉测速源
+      });
+
+      window.addEventListener('beforeunload', stop);
+
+      initTheme();
+      initIPBlock();
+      setRunningUI(false);
+    })();
+  </script>
 </body>
 </html>
