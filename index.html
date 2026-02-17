@@ -1,97 +1,145 @@
 <!DOCTYPE html>
 <html lang="zh" class="js">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>流量消耗器</title>
-  <meta name="keywords" content="IP查询,IP归属查询,在线测速,网速测试,多地IP查询,流量消耗器">
-  <meta name="description" content="测试您的网速，多地查询您的IP地址，同时具备网络延迟实时检测">
+  <meta name="keywords" content="IP查询,IP归属查询,在线测速,网速测试,多地IP查询,流量消耗器" />
+  <meta name="description" content="测试您的网速，同时具备网络延迟实时检测" />
   <meta http-equiv="Cache-Control" content="no-store" />
 
-  <link rel="stylesheet" href="res/dashlite.css">
-  <link rel="stylesheet" href="res/style.css">
-  <link rel="shortcut icon" href="images/favicon.ico">
-  <link rel="stylesheet" href="res/layer.css" id="layuicss-layer">
+  <link rel="stylesheet" href="res/dashlite.css" />
+  <link rel="stylesheet" href="res/style.css" />
+  <link rel="shortcut icon" href="images/favicon.ico" />
+  <link rel="stylesheet" href="res/layer.css" />
+
   <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
   <style>
-    .stat { width: 100%; column-gap: 1rem; padding: 1rem 1.5rem; }
+    .stat {
+      width: 100%;
+      column-gap: 1rem;
+      padding: 1rem 1.5rem;
+    }
     .stat-title { white-space: nowrap; opacity: .6; }
-    .stat-value { white-space: nowrap; grid-column-start: 1; font-size: 1.8rem; font-weight: 700; line-height: 2.5rem }
+    .stat-value {
+      white-space: nowrap;
+      grid-column-start: 1;
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 2.5rem;
+    }
     .nk-menu-item a { text-decoration: none; }
-    .page-footer { text-align:center; padding: 18px 0 26px; opacity:.75; font-size: 13px; }
+
+    /* 顶部中间三项 */
+    .header-center-tools {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .header-center-tools a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .header-center-tools .icon { font-size: 18px; }
+
+    /* 三栏布局：左logo / 中间工具 / 右侧占位 */
+    .header-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+    .header-left { justify-self: start; display:flex; align-items:center; gap:10px; }
+    .header-center { justify-self: center; }
+    .header-right { justify-self: end; }
+
+    /* 出口地址展示更清晰 */
+    .ip-row {
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    .ip-row:last-child { border-bottom: 0; }
+    .ip-label { opacity:.75; }
+    .ip-value { text-align:right; word-break: break-all; }
+    .ip-loc { opacity:.7; margin-left:6px; }
+    .muted { opacity:.7; font-size: 12px; }
+
+    /* footer */
+    .page-footer {
+      text-align:center;
+      padding: 18px 12px 30px;
+      opacity:.75;
+      font-size: 13px;
+    }
     .page-footer a { text-decoration:none; }
   </style>
 </head>
 
 <body class="nk-body npc-invest bg-lighter no-touch nk-nio-theme" style="cursor:pointer">
-<div class="nk-wrap ">
-  <!-- header -->
+<div class="nk-wrap">
+
+  <!-- Header -->
   <div class="nk-header nk-header-fluid nk-header-fixed is-light">
     <div class="container-xl">
-      <div class="nk-header-wrap link-between">
-        <div class="nk-menu-trigger mr-sm-2 d-lg-none">
-          <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav">
-            <em class="icon ni ni-menu"></em>
-          </a>
-        </div>
+      <div class="nk-header-wrap link-between" style="width:100%;">
+        <div class="header-grid">
 
-        <div class="nk-header-brand">
-          <a href="#" class="logo-link text-base">
-            <img src="images/流量.png" class="hide-mb-sm">流量消耗器
-          </a>
-        </div>
-
-        <div class="nk-header-tools nk-header-menu" data-content="headerNav">
-          <div class="nk-header-mobile">
-            <div class="nk-header-brand">
-              <a href="/" class="logo-link text-base">
-                <span class="nio-version" style="font-size: 21px;position: inherit;">流量消耗器</span>
+          <!-- 左侧 LOGO -->
+          <div class="header-left">
+            <div class="nk-menu-trigger mr-sm-2 d-lg-none">
+              <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav">
+                <em class="icon ni ni-menu"></em>
               </a>
             </div>
-            <div class="nk-menu-trigger mr-n2">
-              <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav">
-                <em class="icon ni ni-arrow-left"></em>
+
+            <div class="nk-header-brand">
+              <a href="#" class="logo-link text-base">
+                <img src="images/流量.png" class="hide-mb-sm" alt="logo" />
+                流量消耗器
               </a>
             </div>
           </div>
 
-          <!-- ✅ 删除博客相关入口，仅保留工具入口（你也可以继续删） -->
-          <ul class="nk-menu nk-menu-main">
-            <li class="nk-menu-item">
-              <a href="https://ip.ipgg.cn" class="nk-menu-link nk-ibx-action-item">
+          <!-- 中间 3 个按钮：居中 -->
+          <div class="header-center">
+            <div class="header-center-tools">
+              <a href="https://ip.ipgg.cn" class="nk-menu-link nk-ibx-action-item" target="_blank" rel="noopener">
                 <em class="icon ni ni-map"></em>
                 <span class="nk-menu-text">IP归属查询</span>
               </a>
-            </li>
-            <li class="nk-menu-item">
-              <a href="https://v6test.ipgg.cn" class="nk-menu-link nk-ibx-action-item">
+              <a href="https://v6test.ipgg.cn" class="nk-menu-link nk-ibx-action-item" target="_blank" rel="noopener">
                 <em class="icon ni ni-network"></em>
                 <span class="nk-menu-text">IPV6检测</span>
               </a>
-            </li>
-          </ul>
-        </div>
-
-        <div class="no-gutters">
-          <ul class="nk-quick-nav">
-            <li class="dropdown">
-              <a href="javascript:;" class="progress-rating dark-switch ">
+              <a href="javascript:;" class="progress-rating dark-switch">
                 <span class="nk-menu-icon">
                   <em class="icon ni ni-moon"></em>
                   <em class="icon ni ni-sun d-none"></em>
                 </span>
               </a>
-            </li>
-          </ul>
-        </div>
+            </div>
+          </div>
 
+          <!-- 右侧占位（保持三栏居中） -->
+          <div class="header-right"></div>
+
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- content -->
-  <div class="nk-content nk-content-lg nk-content-fluid">
+  <!-- Content -->
+  <div class="nk-content nk-content-lg nk-content-fluid" style="padding-top: 90px;">
     <div id="app" class="container-xl">
       <div class="col-sm-12 col-md-10 col-xl-8 center-block">
 
@@ -99,12 +147,13 @@
         <div class="card card-preview">
           <div class="card-inner">
             <div class="nya-title nk-ibx-action-item progress-rating">
-              <em class="icon ni ni-info"></em><span class="nk-menu-text font-weight-bold">工具说明</span>
+              <em class="icon ni ni-info"></em>
+              <span class="nk-menu-text font-weight-bold">工具说明</span>
             </div>
             <div class="accordion-inner">
-              <div class="title"><span class="dot dot-lg sq" data-bg="#9cabff" style="background: rgb(156, 171, 255);"></span>&nbsp;<span>虽支持可自定义地址，但无法请求跨域链接</span></div>
-              <div class="title"><span class="dot dot-lg sq" data-bg="#ffa9ce" style="background: rgb(255, 169, 206);"></span>&nbsp;<span>速度不满意？请尝试手动切换节点，加大运行线程</span></div>
-              <div class="title"><span class="dot dot-lg sq" data-bg="#f98c45" style="background: rgb(249, 140, 69);"></span>&nbsp;<span>消耗流量建议使用海外节点，速度可能会更快</span></div>
+              <div class="title"><span class="dot dot-lg sq" data-bg="#9cabff"></span>&nbsp;<span>虽支持可自定义地址，但无法请求跨域链接</span></div>
+              <div class="title"><span class="dot dot-lg sq" data-bg="#ffa9ce"></span>&nbsp;<span>速度不满意？请尝试手动切换测速源，加大运行线程</span></div>
+              <div class="title"><span class="dot dot-lg sq" data-bg="#f98c45"></span>&nbsp;<span>建议使用速度更快的节点/线路</span></div>
             </div>
           </div>
         </div>
@@ -113,19 +162,20 @@
         <div class="card card-preview">
           <div class="card-inner mt-3">
             <div class="nya-title nk-ibx-action-item progress-rating">
-              <em class="icon ni ni-setting"></em><span class="nk-menu-text font-weight-bold">测试设置</span>
+              <em class="icon ni ni-setting"></em>
+              <span class="nk-menu-text font-weight-bold">测试设置</span>
             </div>
 
             <div class="form-group">
               <label class="form-label">测试地址</label>
               <div class="form-control-wrap">
-                <!-- ✅ 只保留：朝夕光年(默认首选)、Cloudflare 25MB(国外)、BBC中文网(国外) + 自定义 -->
                 <select id="select"
                         onchange="document.getElementById('link').value=this.options[this.selectedIndex].value;setCookie('select',this.selectedIndex,365);"
-                        type="text" class="form-control">
+                        class="form-control">
                   <option value="" id="diy">自定义</option>
 
                   <optgroup label="国内测速点">
+                    <!-- 默认选中：朝夕光年 -->
                     <option selected="selected"
                             value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4">
                       朝夕光年游戏(点击此处可更换测速源)
@@ -139,7 +189,14 @@
 
                 <input value=""
                        oninput="document.getElementById('select').selectedIndex=0;document.getElementById('diy').value=this.value;setCookie('diy',this.value,365);setCookie('select',0,365);"
-                       type="text" id="link" placeholder="请输入下载链接" autocomplete="off" class="form-control">
+                       type="text"
+                       id="link"
+                       placeholder="请输入下载链接"
+                       autocomplete="off"
+                       class="form-control" />
+              </div>
+              <div class="muted" style="margin-top:6px;">
+                仅保留：朝夕光年（默认）/ BBC中文网（国外）
               </div>
             </div>
 
@@ -151,8 +208,9 @@
                   <em class="icon ni ni-minus"></em>
                 </button>
                 <input onchange="var self= document.getElementById('thread');if(self.value<self.min)self.value=self.min;if(self.value>self.max)self.value=self.max"
-                       id="thread" type="number" min="1" max="32" value="1"
-                       class="form-control number-spinner">
+                       id="thread"
+                       type="number" min="1" max="32" value="1"
+                       class="form-control number-spinner" />
                 <button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.max)thread.value++;"
                         class="btn btn-icon btn-outline-primary number-spinner-btn number-plus">
                   <em class="icon ni ni-plus"></em>
@@ -163,18 +221,20 @@
             <div class="form-group" id="back">
               <div class="preview-block">
                 <div class="custom-control custom-switch checked">
-                  <input onclick="musiccontrol(this)" type="checkbox" id="customSwitch2" class="custom-control-input">
+                  <input onclick="musiccontrol(this)" type="checkbox" id="customSwitch2" class="custom-control-input" />
                   <label for="customSwitch2" class="custom-control-label">保持后台运行</label>
                 </div>
               </div>
             </div>
 
             <button onclick="botton_clicked();" type="button" id="do"
-                    class="btn btn-dim btn-outline-secondary btn-block card-link">开始</button>
+                    class="btn btn-dim btn-outline-secondary btn-block card-link">
+              开始
+            </button>
 
             <div class="row mt-4">
               <div class="col-sm-12 col-md-4 border stat"
-                   onclick='inputMax=prompt("请输入流量上限(GB)\n不填为不设置上限","");if(inputMax !== null)setMax(inputMax)'>
+                   onclick='inputMax=prompt("请输入流量上限(GB)\\n不填为不设置上限","");if(inputMax !== null)setMax(inputMax)'>
                 <div class="text-dark">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                        class="h-15 w-15 float-right pt-3">
@@ -191,7 +251,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                        class="h-15 w-15 float-right pt-3">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                          d="M16.469,8.924l-2.414,2.413c-0.156,0.156-0.408,0.156-0.564,0c-0.156-0.155-0.156-0.408,0-0.563l2.414-2.414c1.175-1.175,1.175-3.087,0-4.262c-0.57-0.569-1.326-0.883-2.132-0.883s-1.562,0.313-2.132,0.883L9.227,6.511c-1.175,1.175-1.175,3.087,0,4.263c0.288,0.288,0.624,0.511,0.997,0.662c0.204,0.083,0.303,0.315,0.22,0.52c-0.171,0.422-0.643,0.17-0.52,0.22c-0.473-0.191-0.898-0.474-1.262-0.838c-1.487-1.485-1.487-3.904,0-5.391l2.414-2.413c0.72-0.72,1.678-1.117,2.696-1.117s1.976,0.396,2.696,1.117C17.955,5.02,17.955,7.438,16.469,8.924 M10.076,7.825c-0.205-0.083-0.437,0.016-0.52,0.22c-0.083,0.205,0.016,0.437,0.22,0.52c0.374,0.151,0.709,0.374,0.997,0.662c1.176,1.176,1.176,3.088,0,4.263l-2.414,2.413c-0.569,0.569-1.326,0.883-2.131,0.883s-1.562-0.313-2.132-0.883c-1.175-1.175-1.175-3.087,0-4.262L6.51,9.227c0.156-0.155,0.156-0.408,0-0.564c-0.156-0.156-0.408-0.156-0.564,0l-2.414,2.414c-1.487,1.485-1.487,3.904,0,5.391c0.72,0.72,1.678,1.116,2.696,1.116s1.976-0.396,2.696-1.116l2.414-2.413c1.487-1.486,1.487-3.905,0-5.392C10.974,8.298,10.55,8.017,10.076,7.825"></path>
+                          d="M16.469,8.924l-2.414,2.413c-0.156,0.156-0.408,0.156-0.564,0c-0.156-0.155-0.156-0.408,0-0.563l2.414-2.414c1.175-1.175,1.175-3.087,0-4.262c-0.57-0.569-1.326-0.883-2.132-0.883s-1.562,0.313-2.132,0.883L9.227,6.511c-1.175,1.175-1.175,3.087,0,4.263c0.288,0.288,0.624,0.511,0.997,0.662c0.204,0.083,0.303,0.315,0.22,0.52c-0.171,0.422-0.643,0.17-0.52,0.22c-0.473-0.191-0.898-0.474-1.262-0.838c-1.487-1.485-1.487-3.904,0-5.391l2.414-2.413c0.72-0.72,1.678-1.117,2.696-1.117s1.976,0.396,2.696,1.117C17.955,5.02,17.955,7.438,16.469,8.924"></path>
                   </svg>
                 </div>
                 <div class="stat-title" id="describe">实时速度</div>
@@ -218,65 +278,43 @@
         <div class="card card-preview">
           <div class="card-inner">
             <div class="nya-title nk-ibx-action-item progress-rating">
-              <em class="icon ni ni-speed"></em><span class="nk-menu-text font-weight-bold">实时图表</span>
+              <em class="icon ni ni-speed"></em>
+              <span class="nk-menu-text font-weight-bold">实时图表</span>
             </div>
-            <br>
+            <br />
             <ul class="nk-ecwg8-legends">
-              <li><div class="title"><span class="dot" data-bg="#536fc4" style="background: rgb(83, 111, 196);"></span>&nbsp;速 率</div></li>
-              <li><div class="title"><span class="dot" data-bg="#90ca74" style="background: rgb(144, 202, 116);"></span>&nbsp;延 迟</div></li>
+              <li><div class="title"><span class="dot" data-bg="#536fc4"></span>&nbsp;速 率</div></li>
+              <li><div class="title"><span class="dot" data-bg="#90ca74"></span>&nbsp;延 迟</div></li>
             </ul>
             <div id="dv" style="position: relative;height: 300px;overflow: hidden;"></div>
           </div>
         </div>
 
-        <!-- 出口地址 -->
+        <!-- 出口地址：只保留 IPv4 + 中文属地 -->
         <div class="card card-preview">
           <div class="card-inner">
             <div class="nya-title nk-ibx-action-item progress-rating">
-              <em class="icon ni ni-location"></em><span class="nk-menu-text font-weight-bold">出口地址</span>
+              <em class="icon ni ni-location"></em>
+              <span class="nk-menu-text font-weight-bold">出口地址</span>
             </div>
 
-            <div class="accordion-inner">
-              <li class="nk-menu-item">
-                <a class="text-waring" style="pointer-events:none;">国内 IPv4</a>
-                <a class="text-waring" style="pointer-events:none;float: right;" id="ipcn_v4">Loading...</a>
-              </li>
-              <li class="nk-menu-item">
-                <a class="text-waring" style="pointer-events:none;">国内 IPv6</a>
-                <a class="text-waring" style="pointer-events:none;float: right;" id="ipcn_v6">Loading...</a>
-              </li>
-              <li class="nk-menu-item">
-                <a style="pointer-events:none;">海外 IPv4</a>
-                <a style="pointer-events:none;float: right;" id="ipgb_v4">Loading...</a>
-              </li>
-              <li class="nk-menu-item">
-                <a style="pointer-events:none;">海外 IPv6</a>
-                <a style="pointer-events:none;float: right;" id="ipgb_v6">Loading...</a>
-              </li>
+            <div style="margin-top: 10px;">
+              <div class="ip-row">
+                <div class="ip-label">IPv4</div>
+                <div class="ip-value">
+                  <span id="ipv4">Loading...</span>
+                  <span id="ipv4_loc" class="ip-loc"></span>
+                </div>
+              </div>
+            </div>
 
-              <hr>
-
-              <li class="nk-menu-item">
-                <a class="text-waring" style="pointer-events:none;">百度连通性</a>
-                <a class="text-waring" style="pointer-events:none;float: right;" id="laycn">-ms</a>
-              </li>
-              <li class="nk-menu-item">
-                <a style="pointer-events:none;">Cloudflare连通性</a>
-                <a style="pointer-events:none;float: right;" id="laygb">-ms</a>
-              </li>
-              <li class="nk-menu-item">
-                <a class="text-waring" style="pointer-events:none;">Github连通性</a>
-                <a class="text-waring" style="pointer-events:none;float: right;" id="github">-ms</a>
-              </li>
-              <li class="nk-menu-item">
-                <a style="pointer-events:none;">Youtube连通性</a>
-                <a style="pointer-events:none;float: right;" id="youtube">-ms</a>
-              </li>
+            <div class="muted" style="margin-top:10px;">
+              说明：你没有国内/海外两套出口 API，因此这里只展示当前网络的 IPv4 与属地（中文）。
             </div>
           </div>
         </div>
 
-        <!-- 页脚来源 -->
+        <!-- 底部来源声明 -->
         <div class="page-footer">
           本页面基于开源项目：
           <a href="https://github.com/xinycai/traffic_deplete" target="_blank" rel="noopener">xinycai/traffic_deplete</a>
@@ -288,10 +326,11 @@
 </div>
 
 <audio controls id="music" loop="loop" style="display:none">
-  <source src="res/background.mp3" type="audio/mpeg">
+  <source src="res/background.mp3" type="audio/mpeg" />
 </audio>
 
 <script>
+  // 防双击缩放（移动端）
   var lastTouchEnd = 0;
   if (!!('ontouchstart' in window || navigator.maxTouchPoints)) {
     document.documentElement.addEventListener('touchend', function (event) {
@@ -321,12 +360,11 @@
 
   document.getElementById("music").addEventListener("pause", function () {
     document.title = '流量消耗器';
-    if (run && !visibl) botton_clicked();
+    if (window.run && !window.visibl) botton_clicked();
     document.getElementById("customSwitch2").checked = false;
   });
-
   document.getElementById("music").addEventListener("play", function () {
-    if (!(run || visibl)) botton_clicked();
+    if (!(window.run || window.visibl)) botton_clicked();
     document.getElementById("customSwitch2").checked = true;
   });
 
@@ -336,7 +374,6 @@
     var expires = "expires=" + d.toGMTString();
     document.cookie = cname + "=" + cvalue + "; " + expires;
   }
-
   function getCookie(cname) {
     var name = cname + "=";
     var ca = document.cookie.split(';');
@@ -347,23 +384,15 @@
     return "";
   }
 
-  // 恢复自定义
+  // 恢复自定义测速源
   document.getElementById('diy').value = getCookie("diy");
-
-  // ✅ 默认首选项：朝夕光年（index=1，因为0是自定义）
-  const savedIndex = parseInt(getCookie("select") || "", 10);
-  if (!Number.isNaN(savedIndex) && savedIndex > 0) {
-    document.getElementById('select').selectedIndex = savedIndex;
-  } else {
-    document.getElementById('select').selectedIndex = 1;
-  }
-
+  if (getCookie("select")) document.getElementById('select').selectedIndex = getCookie("select");
   var selector = document.getElementById("select");
   document.getElementById('link').value = selector.options[selector.selectedIndex].value;
 
+  // 流量上限
   var Maximum = 0;
   setMax(getCookie('Max'));
-
   function setMax(inputMax) {
     if (inputMax > 0) {
       setCookie("Max", inputMax, 365);
@@ -377,7 +406,9 @@
   }
 </script>
 
+<!-- 你的原主逻辑（测速/消耗） -->
 <script src="main.js?5"></script>
+
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
 <script src="js/layer.js"></script>
@@ -385,102 +416,67 @@
 <script src="js/script.js"></script>
 <script src="js/common.js"></script>
 
-<!-- ✅ IP + 属地（多接口兜底，修复“不显示具体地区”） -->
+<!-- IPv4 + 中文属地（最精准） -->
 <script>
-  const ipTargets = [
-    { id: 'ipcn_v4', url: 'https://v4.ipgg.cn' },
-    { id: 'ipcn_v6', url: 'https://v6.ipgg.cn' },
-    { id: 'ipgb_v4', url: 'https://v4.wuxie.de' },
-    { id: 'ipgb_v6', url: 'https://v6.wuxie.de' }
-  ];
-
-  async function fetchText(url) {
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error('fetch failed: ' + url);
-    return (await r.text()).trim();
+  function extractIpv4(text) {
+    const m = (text || '').match(/(\d{1,3}\.){3}\d{1,3}/);
+    return m ? m[0] : '';
   }
 
-  async function fetchJson(url) {
-    const r = await fetch(url, { cache: 'no-store' });
-    if (!r.ok) throw new Error('geo fetch failed: ' + url);
-    return await r.json();
-  }
-
-  async function lookupGeo(ip) {
-    const providers = [
-      async () => {
-        const j = await fetchJson(`https://ipwho.is/${encodeURIComponent(ip)}?lang=zh-CN`);
-        if (!j || j.success === false) return null;
-        return {
-          cc: j.country_code || '',
-          country: j.country || '',
-          region: j.region || '',
-          city: j.city || '',
-          isp: (j.connection && j.connection.isp) || j.org || ''
-        };
-      },
-      async () => {
-        const j = await fetchJson(`https://ipapi.co/${encodeURIComponent(ip)}/json/`);
-        if (!j || j.error) return null;
-        return {
-          cc: j.country_code || '',
-          country: j.country_name || j.country || '',
-          region: j.region || '',
-          city: j.city || '',
-          isp: j.org || j.asn || ''
-        };
-      },
-      async () => {
-        const j = await fetchJson(`https://api.ip.sb/geoip/${encodeURIComponent(ip)}`);
-        if (!j) return null;
-        return {
-          cc: j.country_code || j.code || '',
-          country: j.country || '',
-          region: j.region || '',
-          city: j.city || '',
-          isp: j.isp || j.organization || ''
-        };
-      }
-    ];
-
-    for (const p of providers) {
-      try {
-        const g = await p();
-        if (g && (g.country || g.region || g.city || g.isp)) return g;
-      } catch (e) {}
-    }
-    return null;
-  }
-
-  function formatLine(ip, geo) {
-    if (!geo) return ip;
-    const inCN = geo.cc === 'CN' || geo.country === '中国';
-    const tag = inCN ? '国内' : '国外';
-
-    const parts = [];
-    if (!inCN && geo.country) parts.push(geo.country);
-    if (geo.region) parts.push(geo.region);
-    if (geo.city) parts.push(geo.city);
-    if (geo.isp) parts.push(geo.isp);
-
-    const info = parts.join(' ');
-    return info ? `${ip}*（${info}） - ${tag}` : `${ip} - ${tag}`;
-  }
-
-  ipTargets.forEach(async (t) => {
-    const el = document.getElementById(t.id);
-    if (!el) return;
-
+  async function fetchIpv4() {
+    // 1) 优先 ipify
     try {
-      const ip = await fetchText(t.url);
-      el.innerText = ip; // 先显示IP
-      const geo = await lookupGeo(ip);
-      el.innerText = formatLine(ip, geo);
-    } catch (e) {
-      el.innerText = 'NULL';
-      console.error('IP/Geo failed:', t.id, e);
+      const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+      const j = await r.json();
+      if (j && j.ip) return j.ip;
+    } catch (e) {}
+
+    // 2) fallback：ipgg v4（纯文本）
+    try {
+      const r = await fetch('https://v4.ipgg.cn', { cache: 'no-store' });
+      const t = await r.text();
+      const ip = extractIpv4(t.trim());
+      if (ip) return ip;
+    } catch (e) {}
+
+    return '';
+  }
+
+  // 美图：中文省市运营商（比较准）
+  async function geoZh(ip) {
+    if (!ip) return '';
+    try {
+      const url = 'https://webapi-pc.meitu.com/common/ip_location?ip=' + encodeURIComponent(ip);
+      const r = await fetch(url, { cache: 'no-store' });
+      const j = await r.json();
+      const d = j?.data?.[ip];
+      if (j?.code === 0 && d) {
+        const parts = [d.nation, d.province, d.city, d.isp].filter(Boolean);
+        return parts.length ? `（${parts.join(' ')}）` : '';
+      }
+    } catch (e) {}
+    return '';
+  }
+
+  async function loadIpv4AndLoc() {
+    const ipv4El = document.getElementById('ipv4');
+    const locEl = document.getElementById('ipv4_loc');
+
+    ipv4El.textContent = 'Loading...';
+    locEl.textContent = '';
+
+    const ip = await fetchIpv4();
+    if (!ip) {
+      ipv4El.textContent = 'NULL';
+      return;
     }
-  });
+    ipv4El.textContent = ip;
+
+    const loc = await geoZh(ip);
+    locEl.textContent = loc || '';
+  }
+
+  document.addEventListener('DOMContentLoaded', loadIpv4AndLoc);
 </script>
 
 </body>
