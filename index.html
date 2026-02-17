@@ -1,65 +1,241 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>流量消耗器（完全修复版）</title>
-  <meta name="description" content="流量消耗与测速工具，支持中文IP归属显示（IPv4）" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>流量消耗器</title>
   <style>
-    :root { --card-bg: #fff; --bg: #f5f6fa; --text: #2b2b2b; --muted: #6b7280; --primary:#4f6ef7; }
-    body { background: var(--bg); color: var(--text); }
-    .wrap { max-width: 980px; margin: 22px auto 40px; padding: 0 12px; }
-    .topbar {
-      background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    :root{
+      --bg:#eef2f8;
+      --card:#ffffff;
+      --text:#1e293b;
+      --muted:#64748b;
+      --line:#d9e2f1;
+      --primary:#5b74ff;
+      --primary2:#6a83ff;
+      --danger:#ef4444;
+      --ok:#22c55e;
+      --inputBg:#ffffff;
+      --inputText:#0f172a;
+      --shadow:0 8px 24px rgba(2,8,23,.08);
+      --chipShadow:0 10px 20px rgba(91,116,255,.30);
     }
-    .brand { font-weight: 700; font-size: 24px; letter-spacing: .5px; }
-    .top-actions {
-      display: flex; align-items: center; justify-content: center; gap: 28px; flex: 1;
+    body.dark{
+      --bg:#06132b;
+      --card:#0b1a37;
+      --text:#eaf1ff;
+      --muted:#b6c7ea;
+      --line:#2b3f69;
+      --primary:#6481ff;
+      --primary2:#7891ff;
+      --danger:#ff5c7a;
+      --ok:#34d399;
+      --inputBg:#102447;
+      --inputText:#f7fbff;
+      --shadow:0 10px 28px rgba(0,0,0,.40);
+      --chipShadow:0 10px 22px rgba(100,129,255,.45);
     }
-    .top-actions a {
-      color: #4a5b7c; text-decoration: none; font-weight: 600; white-space: nowrap;
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei","Noto Sans SC",Arial,sans-serif;
+      transition:background .2s ease,color .2s ease;
     }
-    .cardx {
-      margin-top: 16px; background: var(--card-bg); border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 18px;
+
+    .wrap{max-width:1040px;margin:22px auto 38px;padding:0 14px}
+
+    .topbar{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      gap:14px;
     }
-    .title-chip {
-      display: inline-block; background: var(--primary); color: #fff; font-weight: 700;
-      border-radius: 10px; padding: 8px 14px; margin-bottom: 14px;
-      box-shadow: 0 4px 12px rgba(79,110,247,.35);
+    .brand{
+      font-weight:800;
+      font-size:20px;
+      letter-spacing:.2px;
+      color:var(--text);
+      opacity:.96;
+      white-space:nowrap;
     }
-    .form-label { font-weight: 700; margin-bottom: 8px; }
-    .stat-grid {
-      display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 16px;
+    .topnav{
+      margin-left:auto;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      flex-wrap:wrap;
     }
-    .stat-box {
-      background: #fafbff; border: 1px solid #e9ecf5; border-radius: 10px; padding: 12px;
+    .topnav a{
+      color:var(--text);
+      text-decoration:none;
+      font-weight:700;
+      opacity:.93;
+      font-size:18px;
     }
-    .stat-name { color: var(--muted); font-size: 13px; }
-    .stat-value { font-size: 22px; font-weight: 700; margin-top: 6px; }
-    .ip-row {
-      display: grid; grid-template-columns: 90px 1fr;
-      gap: 10px; padding: 7px 0; border-bottom: 1px dashed #eceff6;
+
+    .icon-btn{
+      width:36px;height:36px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--inputBg);
+      color:var(--text);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:.2s ease;
+      padding:0;
     }
-    .ip-row:last-child { border-bottom: none; }
-    .ip-k { color: #4b5563; font-weight: 700; }
-    .ip-v { color: #1f2937; word-break: break-all; }
-    .muted { color: var(--muted); }
-    .btn-primary {
-      background: #5b78ff; border-color: #5b78ff;
+    .icon-btn:hover{transform:translateY(-1px)}
+    .moon,.sun{width:18px;height:18px;display:block}
+    body.dark .sun{display:block}
+    body.dark .moon{display:none}
+    body:not(.dark) .sun{display:none}
+    body:not(.dark) .moon{display:block}
+
+    .card{
+      margin-top:16px;
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      padding:18px;
     }
-    .btn-primary:disabled {
-      background: #aeb8e9; border-color: #aeb8e9; cursor: not-allowed;
+
+    .chip{
+      display:inline-block;
+      margin-bottom:14px;
+      background:var(--primary);
+      color:#fff;
+      border-radius:10px;
+      padding:8px 14px;
+      font-weight:800;
+      font-size:18px;
+      box-shadow:var(--chipShadow);
     }
-    .small-note { font-size: 12px; color: #6b7280; margin-top: 6px; }
-    .row-gap { row-gap: 10px; }
-    @media (max-width: 768px){
-      .topbar { flex-direction: column; align-items: flex-start; }
-      .top-actions { width: 100%; justify-content: center; }
-      .stat-grid { grid-template-columns: 1fr; }
-      .ip-row { grid-template-columns: 70px 1fr; }
+
+    .label{
+      font-size:18px;
+      font-weight:800;
+      color:var(--text);
+      margin-bottom:8px;
+      line-height:1.3;
+    }
+
+    input[type="text"], input[type="number"]{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:var(--inputBg);
+      color:var(--inputText);
+      padding:12px;
+      font-size:18px;
+      outline:none;
+      transition:border-color .2s ease, background .2s ease, color .2s ease;
+    }
+    input[type="text"]:focus, input[type="number"]:focus{border-color:var(--primary)}
+    input::placeholder{color:var(--muted);opacity:1}
+
+    .hint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:14px;
+      font-weight:600;
+      line-height:1.5;
+    }
+
+    .btn{
+      margin-top:14px;
+      width:100%;
+      border:1px solid transparent;
+      border-radius:8px;
+      padding:12px 14px;
+      font-size:22px;
+      font-weight:900;
+      cursor:pointer;
+      transition:.2s ease;
+      color:#fff;
+      background:linear-gradient(90deg,var(--primary),var(--primary2));
+    }
+    .btn.stop{
+      background:transparent;
+      color:var(--danger);
+      border-color:var(--danger);
+    }
+    .btn:hover{transform:translateY(-1px)}
+
+    .stats{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:color-mix(in srgb, var(--card) 85%, #ffffff 15%);
+      padding:12px;
+      min-height:92px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+    }
+    body.dark .stat{
+      background:color-mix(in srgb, var(--card) 78%, #0f2349 22%);
+    }
+    .stat .t{
+      color:var(--muted);
+      font-size:14px;
+      font-weight:700;
+    }
+    .stat .v{
+      color:var(--text);
+      font-size:36px;
+      font-weight:900;
+      line-height:1.1;
+      word-break:break-all;
+    }
+
+    .ip-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:32px;
+    }
+    .ip-table tr + tr td{border-top:1px dashed var(--line)}
+    .ip-table td{
+      padding:10px 0;
+      vertical-align:top;
+      color:var(--text);
+      font-weight:700;
+    }
+    .ip-table td:first-child{
+      width:140px;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    .source{
+      margin-top:16px;
+      color:var(--muted);
+      font-size:26px;
+      font-weight:700;
+    }
+    .source a{color:var(--primary);text-decoration:none;font-weight:900}
+
+    @media (max-width:860px){
+      .topnav{gap:14px}
+      .topnav a{font-size:15px}
+      .stats{grid-template-columns:1fr}
+      .stat .v{font-size:28px}
+      .ip-table{font-size:16px}
+      .source{font-size:14px}
     }
   </style>
 </head>
@@ -67,362 +243,334 @@
   <div class="wrap">
     <div class="topbar">
       <div class="brand">流量消耗器</div>
-      <div class="top-actions">
-        <a href="https://ip.ipgg.cn" target="_blank" rel="noopener">IP归属查询</a>
-        <a href="https://v6test.ipgg.cn" target="_blank" rel="noopener">IPV6检测</a>
-        <a href="javascript:void(0)" id="themeToggle">夜间模式</a>
+      <div class="topnav">
+        <a href="javascript:void(0)" id="ipInfoBtn">IP归属查询</a>
+        <a href="javascript:void(0)" id="ipv6Btn">IPV6检测</a>
+        <button class="icon-btn" id="themeBtn" title="切换夜间模式" aria-label="切换夜间模式">
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3c0 .3-.01.59-.01.89A8 8 0 0 0 20.11 12c.3 0 .59-.01.89-.01z"/>
+          </svg>
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
       </div>
     </div>
 
-    <div class="cardx">
-      <div class="title-chip">测试设置</div>
+    <div class="card">
+      <div class="chip">测速源</div>
 
-      <div class="form-group">
-        <label class="form-label" for="sourceSelect">测试地址</label>
-        <select id="sourceSelect" class="form-control">
-          <optgroup label="国内测速点">
-            <option value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4" selected>
-              朝夕光年游戏(打开网页默认首选项)
-            </option>
-          </optgroup>
-          <optgroup label="国外测速点">
-            <option value="https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js">BBC中文网</option>
-          </optgroup>
-        </select>
-      </div>
+      <div class="label">测速地址（可直接输入自定义下载地址）</div>
+      <input id="sourceInput" list="sourceList" type="text" placeholder="请输入可直链下载地址，或从下拉中选择" />
+      <datalist id="sourceList">
+        <option value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4">朝夕光年游戏(打开网页默认首选项)</option>
+        <option value="https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js">BBC中文网</option>
+      </datalist>
+      <div class="hint">已合并“测速点 + 自定义地址”。你输入的地址会自动保存，下次打开网页直接可用。</div>
 
-      <div class="form-group">
-        <label class="form-label" for="customUrl">自定义下载地址</label>
-        <input id="customUrl" type="url" class="form-control" placeholder="可选：输入后优先使用该链接（必须可直链下载）" />
-        <div class="small-note">如填写了自定义地址，将优先使用自定义地址；留空则使用上面的测速点。</div>
-      </div>
+      <div style="margin-top:14px" class="label">线程（1-32）</div>
+      <input id="threadInput" type="number" min="1" max="32" step="1" value="6" />
 
-      <div class="form-group">
-        <label class="form-label" for="thread">线程（1-16）</label>
-        <input id="thread" type="number" class="form-control" min="1" max="16" value="1" />
-      </div>
+      <button id="toggleBtn" class="btn">开始</button>
 
-      <div class="d-flex row-gap" style="gap:10px;flex-wrap:wrap;">
-        <button id="startBtn" class="btn btn-primary flex-grow-1">开始</button>
-        <button id="stopBtn" class="btn btn-outline-danger flex-grow-1" disabled>停止</button>
-      </div>
-
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-name">总流量</div>
-          <div class="stat-value" id="total">0 B</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="t">总流量</div>
+          <div class="v" id="totalText">0 B</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-name">实时速度</div>
-          <div class="stat-value" id="speed">0 B/s</div>
+        <div class="stat">
+          <div class="t">实时速度</div>
+          <div class="v" id="speedText">0 B/s</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-name">实时带宽</div>
-          <div class="stat-value" id="mbps">0 Mbps</div>
+        <div class="stat">
+          <div class="t">实时带宽</div>
+          <div class="v" id="mbpsText">0 Mbps</div>
         </div>
       </div>
     </div>
 
-    <div class="cardx">
-      <div class="title-chip">出口地址（仅IPv4）</div>
-      <div class="ip-row">
-        <div class="ip-k">IPv4</div>
-        <div class="ip-v" id="ip4">加载中...</div>
-      </div>
-      <div class="ip-row">
-        <div class="ip-k">属地</div>
-        <div class="ip-v" id="loc4">加载中...</div>
-      </div>
-      <div class="small-note muted">说明：仅显示 IPv4，已移除国内/海外 IPv6 项。</div>
+    <div class="card" id="ipCard">
+      <div class="chip">出口地址（仅IPv4）</div>
+      <table class="ip-table">
+        <tr>
+          <td>IPv4</td>
+          <td id="ipv4Text">加载中...</td>
+        </tr>
+        <tr>
+          <td>属地</td>
+          <td id="locText">加载中...</td>
+        </tr>
+      </table>
     </div>
 
-    <div class="cardx">
-      <div class="title-chip">项目来源</div>
-      <div class="muted">本页面基于开源项目：<a href="https://github.com/xinycai/traffic_deplete" target="_blank" rel="noopener">xinycai/traffic_deplete</a></div>
+    <div class="card">
+      <div class="chip">项目来源</div>
+      <div class="source">本页面基于开源项目：<a href="https://github.com/xinycai/traffic_deplete" target="_blank" rel="noopener">xinycai / traffic_deplete</a></div>
     </div>
   </div>
 
   <script>
-    (() => {
-      const $ = (id) => document.getElementById(id);
+    const DEFAULT_SOURCE = "https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4";
+    const BBC_SOURCE = "https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js";
 
-      const sourceSelect = $('sourceSelect');
-      const customUrl = $('customUrl');
-      const threadInput = $('thread');
-      const startBtn = $('startBtn');
-      const stopBtn = $('stopBtn');
+    const LS_THEME = "traffic_theme_dark";
+    const LS_SOURCE = "traffic_custom_source";
+    const LS_THREAD = "traffic_thread";
 
-      const totalEl = $('total');
-      const speedEl = $('speed');
-      const mbpsEl = $('mbps');
-      const ip4El = $('ip4');
-      const loc4El = $('loc4');
+    const sourceInput = document.getElementById("sourceInput");
+    const threadInput = document.getElementById("threadInput");
+    const toggleBtn = document.getElementById("toggleBtn");
+    const totalText = document.getElementById("totalText");
+    const speedText = document.getElementById("speedText");
+    const mbpsText = document.getElementById("mbpsText");
+    const themeBtn = document.getElementById("themeBtn");
+    const ipInfoBtn = document.getElementById("ipInfoBtn");
+    const ipv6Btn = document.getElementById("ipv6Btn");
 
-      let running = false;
-      let totalBytes = 0;
-      let secBytes = 0;
-      let workers = [];
-      let statTimer = null;
+    const ipv4Text = document.getElementById("ipv4Text");
+    const locText = document.getElementById("locText");
 
-      const MAX_REDIRECT = 5;
+    let running = false;
+    let controllers = [];
+    let timerId = null;
+    let totalBytes = 0;
+    let bytesInTick = 0;
+    let lastTickTs = 0;
 
-      function formatBytes(n) {
-        if (!Number.isFinite(n) || n < 0) return '0 B';
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        let i = 0;
-        let v = n;
-        while (v >= 1024 && i < units.length - 1) {
-          v /= 1024;
-          i++;
-        }
-        return `${v.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+    function clampThread(v){
+      let n = parseInt(v,10);
+      if(Number.isNaN(n)) n = 1;
+      if(n < 1) n = 1;
+      if(n > 32) n = 32;
+      return n;
+    }
+
+    function formatBytes(b){
+      if(!Number.isFinite(b) || b <= 0) return "0 B";
+      const units = ["B","KB","MB","GB","TB"];
+      let i = 0, x = b;
+      while(x >= 1024 && i < units.length - 1){ x /= 1024; i++; }
+      const fixed = x >= 100 ? 0 : x >= 10 ? 1 : 2;
+      return `${x.toFixed(fixed)} ${units[i]}`;
+    }
+
+    function applyThemeFromStorage(){
+      const isDark = localStorage.getItem(LS_THEME) === "1";
+      if(isDark) document.body.classList.add("dark");
+      else document.body.classList.remove("dark");
+    }
+
+    function saveSourceDebounced(){
+      localStorage.setItem(LS_SOURCE, sourceInput.value.trim());
+    }
+
+    function initStoredValues(){
+      const savedSource = localStorage.getItem(LS_SOURCE);
+      sourceInput.value = (savedSource && savedSource.trim()) ? savedSource.trim() : DEFAULT_SOURCE;
+
+      const savedThread = clampThread(localStorage.getItem(LS_THREAD) || 6);
+      threadInput.value = savedThread;
+    }
+
+    function updateButtonUI(){
+      if(running){
+        toggleBtn.textContent = "停止";
+        toggleBtn.classList.add("stop");
+      }else{
+        toggleBtn.textContent = "开始";
+        toggleBtn.classList.remove("stop");
       }
+    }
 
-      function toMbps(bytesPerSec) {
-        return ((bytesPerSec * 8) / 1024 / 1024).toFixed(2);
+    function stopAll(){
+      running = false;
+      updateButtonUI();
+      controllers.forEach(c => c.abort());
+      controllers = [];
+      if(timerId){
+        clearInterval(timerId);
+        timerId = null;
       }
+    }
 
-      function getTargetUrl() {
-        const custom = customUrl.value.trim();
-        if (custom) return custom;
-        return sourceSelect.value.trim();
-      }
-
-      function normalizeThread(v) {
-        let n = Number(v);
-        if (!Number.isFinite(n)) n = 1;
-        n = Math.floor(n);
-        if (n < 1) n = 1;
-        if (n > 16) n = 16;
-        return n;
-      }
-
-      async function fetchLoop(url, signal) {
-        while (running && !signal.aborted) {
-          try {
-            const resp = await fetch(url, {
-              method: 'GET',
-              cache: 'no-store',
-              redirect: 'follow',
-              signal
-            });
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-            if (!resp.body) {
-              const buf = await resp.arrayBuffer();
-              const len = buf.byteLength || 0;
-              totalBytes += len;
-              secBytes += len;
-              continue;
-            }
-            const reader = resp.body.getReader();
-            while (running && !signal.aborted) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              const len = value ? value.byteLength : 0;
-              totalBytes += len;
-              secBytes += len;
-            }
-          } catch (e) {
-            await new Promise(r => setTimeout(r, 400));
+    async function workerLoop(url, signal){
+      while(!signal.aborted){
+        try{
+          const resp = await fetch(url, { cache:"no-store", mode:"cors", signal });
+          if(!resp || !resp.body){
+            await new Promise(r => setTimeout(r, 150));
+            continue;
           }
-        }
-      }
-
-      function setRunningUI(isRunning) {
-        startBtn.disabled = isRunning;
-        stopBtn.disabled = !isRunning;
-        sourceSelect.disabled = isRunning;
-        customUrl.disabled = isRunning;
-        threadInput.disabled = isRunning;
-      }
-
-      function startStatTimer() {
-        if (statTimer) clearInterval(statTimer);
-        statTimer = setInterval(() => {
-          const s = secBytes;
-          secBytes = 0;
-          totalEl.textContent = formatBytes(totalBytes);
-          speedEl.textContent = `${formatBytes(s)}/s`;
-          mbpsEl.textContent = `${toMbps(s)} Mbps`;
-        }, 1000);
-      }
-
-      function stopStatTimer() {
-        if (statTimer) {
-          clearInterval(statTimer);
-          statTimer = null;
-        }
-      }
-
-      async function start() {
-        if (running) return;
-
-        const url = getTargetUrl();
-        if (!url) {
-          alert('测速地址为空，请选择测速点或填写自定义链接');
-          return;
-        }
-
-        try {
-          new URL(url);
-        } catch {
-          alert('测速地址格式不正确');
-          return;
-        }
-
-        const thread = normalizeThread(threadInput.value);
-        threadInput.value = String(thread);
-
-        running = true;
-        setRunningUI(true);
-
-        totalBytes = 0;
-        secBytes = 0;
-        totalEl.textContent = '0 B';
-        speedEl.textContent = '0 B/s';
-        mbpsEl.textContent = '0 Mbps';
-
-        startStatTimer();
-
-        workers = Array.from({ length: thread }, () => {
-          const controller = new AbortController();
-          fetchLoop(url, controller.signal);
-          return controller;
-        });
-      }
-
-      function stop() {
-        if (!running) return;
-        running = false;
-        for (const c of workers) {
-          try { c.abort(); } catch {}
-        }
-        workers = [];
-        stopStatTimer();
-        setRunningUI(false);
-      }
-
-      async function fetchIPv4() {
-        const ipv4Apis = [
-          'https://api.ipify.org?format=json',
-          'https://ipv4.icanhazip.com',
-          'https://ifconfig.me/ip'
-        ];
-
-        for (const api of ipv4Apis) {
-          try {
-            const res = await fetch(api, { cache: 'no-store' });
-            if (!res.ok) continue;
-            let ip = '';
-            const ct = (res.headers.get('content-type') || '').toLowerCase();
-            if (ct.includes('application/json')) {
-              const j = await res.json();
-              ip = (j.ip || '').trim();
-            } else {
-              ip = (await res.text()).trim();
+          const reader = resp.body.getReader();
+          while(true){
+            const {done, value} = await reader.read();
+            if(done || signal.aborted) break;
+            if(value && value.byteLength){
+              totalBytes += value.byteLength;
+              bytesInTick += value.byteLength;
             }
-            if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) return ip;
-          } catch {}
+          }
+        }catch(e){
+          if(signal.aborted) break;
+          await new Promise(r => setTimeout(r, 220));
         }
-        return '';
+      }
+    }
+
+    function startRun(){
+      let url = (sourceInput.value || "").trim();
+      if(!url) url = DEFAULT_SOURCE;
+      sourceInput.value = url;
+      localStorage.setItem(LS_SOURCE, url);
+
+      const threads = clampThread(threadInput.value);
+      threadInput.value = threads;
+      localStorage.setItem(LS_THREAD, String(threads));
+
+      running = true;
+      updateButtonUI();
+
+      bytesInTick = 0;
+      lastTickTs = performance.now();
+
+      controllers = [];
+      for(let i=0;i<threads;i++){
+        const c = new AbortController();
+        controllers.push(c);
+        workerLoop(url, c.signal);
       }
 
-      async function fetchLocationCN(ip) {
-        const geoApis = [
-          `https://whois.pconline.com.cn/ipJson.jsp?ip=${encodeURIComponent(ip)}&json=true`,
-          `https://opendata.baidu.com/api.php?query=${encodeURIComponent(ip)}&co=&resource_id=6006&oe=utf8`
-        ];
+      timerId = setInterval(()=>{
+        const now = performance.now();
+        const dt = Math.max((now - lastTickTs) / 1000, 0.001);
+        const bps = bytesInTick / dt;
+        const mbps = (bps * 8) / 1000 / 1000;
 
-        for (const api of geoApis) {
-          try {
-            const res = await fetch(api, { cache: 'no-store' });
-            if (!res.ok) continue;
-            const text = await res.text();
+        totalText.textContent = formatBytes(totalBytes);
+        speedText.textContent = `${formatBytes(bps)}/s`;
+        mbpsText.textContent = `${mbps.toFixed(2)} Mbps`;
 
-            if (api.includes('whois.pconline.com.cn')) {
-              const clean = text.replace(/^\uFEFF/, '').trim();
-              let j;
-              try { j = JSON.parse(clean); } catch { continue; }
-              const p = (j.pro || '').trim();
-              const c = (j.city || '').trim();
-              const addr = (j.addr || '').replace(/\s+/g, ' ').trim();
-              const merged = [p, c].filter(Boolean).join(' ');
-              const finalText = (merged || addr || '').replace(/^中国\s*/,'').trim();
-              if (finalText) return finalText;
-            } else if (api.includes('opendata.baidu.com')) {
-              const j = JSON.parse(text);
-              const item = j?.data?.[0];
-              if (item) {
-                const loc = `${item.location || ''} ${item.titlecont || ''}`.replace(/\s+/g, ' ').trim();
-                if (loc) return loc;
+        bytesInTick = 0;
+        lastTickTs = now;
+      }, 1000);
+    }
+
+    function toggleRun(){
+      if(running) stopAll();
+      else startRun();
+    }
+
+    async function fetchIPv4CN(){
+      const ipApis = [
+        "https://api64.ipify.org?format=json",
+        "https://api.ip.sb/jsonip",
+        "https://ifconfig.co/json"
+      ];
+      let ip = "";
+      for(const api of ipApis){
+        try{
+          const res = await fetch(api, {cache:"no-store"});
+          if(!res.ok) continue;
+          const d = await res.json();
+          ip = d.ip || d.ip_address || "";
+          if(ip) break;
+        }catch(e){}
+      }
+      if(!ip){
+        ipv4Text.textContent = "获取失败";
+        locText.textContent = "无法获取IPv4";
+        return;
+      }
+      ipv4Text.textContent = ip;
+
+      const locApis = [
+        `https://whois.pconline.com.cn/ipJson.jsp?ip=${encodeURIComponent(ip)}&json=true`,
+        `https://ip-api.com/json/${encodeURIComponent(ip)}?lang=zh-CN`,
+        `https://ipwho.is/${encodeURIComponent(ip)}?lang=zh`
+      ];
+
+      for(const api of locApis){
+        try{
+          const res = await fetch(api, {cache:"no-store"});
+          if(!res.ok) continue;
+
+          if(api.includes("pconline")){
+            const t = await res.text();
+            const j = JSON.parse(t);
+            const p = (j.pro || "").trim();
+            const c = (j.city || "").trim();
+            const addr = `${p}${c}`.replace(/\s+/g,"");
+            if(addr && addr !== "局域网" && addr !== "CZ88.NET"){
+              locText.textContent = addr;
+              return;
+            }
+          }else{
+            const j = await res.json();
+            if(api.includes("ip-api")){
+              const country = (j.country || "").trim();
+              const region = (j.regionName || "").trim();
+              const city = (j.city || "").trim();
+              const isp = (j.isp || "").trim();
+              const arr = [country, region, city, isp].filter(Boolean);
+              if(arr.length){
+                locText.textContent = arr.join(" ");
+                return;
+              }
+            }else{
+              const country = (j.country || "").trim();
+              const region = (j.region || "").trim();
+              const city = (j.city || "").trim();
+              const conn = j.connection && j.connection.isp ? String(j.connection.isp).trim() : "";
+              const arr = [country, region, city, conn].filter(Boolean);
+              if(arr.length){
+                locText.textContent = arr.join(" ");
+                return;
               }
             }
-          } catch {}
-        }
-        return '未知地区';
-      }
-
-      async function initIPBlock() {
-        ip4El.textContent = '加载中...';
-        loc4El.textContent = '加载中...';
-
-        const ip = await fetchIPv4();
-        if (!ip) {
-          ip4El.textContent = '获取失败';
-          loc4El.textContent = '获取失败';
-          return;
-        }
-
-        ip4El.textContent = ip;
-        const loc = await fetchLocationCN(ip);
-        loc4El.textContent = loc || '未知地区';
-      }
-
-      function initTheme() {
-        const key = 'llxh_dark';
-        const btn = $('themeToggle');
-        const setDark = (on) => {
-          if (on) {
-            document.documentElement.style.setProperty('--bg', '#0f172a');
-            document.documentElement.style.setProperty('--card-bg', '#111827');
-            document.documentElement.style.setProperty('--text', '#e5e7eb');
-            document.documentElement.style.setProperty('--muted', '#9ca3af');
-          } else {
-            document.documentElement.style.setProperty('--bg', '#f5f6fa');
-            document.documentElement.style.setProperty('--card-bg', '#fff');
-            document.documentElement.style.setProperty('--text', '#2b2b2b');
-            document.documentElement.style.setProperty('--muted', '#6b7280');
           }
-        };
-        const saved = localStorage.getItem(key) === '1';
-        setDark(saved);
-        btn.addEventListener('click', () => {
-          const now = localStorage.getItem(key) === '1';
-          const next = !now;
-          localStorage.setItem(key, next ? '1' : '0');
-          setDark(next);
-        });
+        }catch(e){}
       }
 
-      startBtn.addEventListener('click', start);
-      stopBtn.addEventListener('click', stop);
+      locText.textContent = "未知地区";
+    }
 
-      sourceSelect.addEventListener('change', () => {
-        if (!customUrl.value.trim()) {
-          // 默认跟随下拉变化，开始按钮无需任何额外逻辑始终可点
-        }
-      });
+    themeBtn.addEventListener("click", ()=>{
+      document.body.classList.toggle("dark");
+      localStorage.setItem(LS_THEME, document.body.classList.contains("dark") ? "1" : "0");
+    });
 
-      customUrl.addEventListener('input', () => {
-        // 允许空输入；空时自动回落到下拉测速源
-      });
+    sourceInput.addEventListener("input", saveSourceDebounced);
+    sourceInput.addEventListener("change", saveSourceDebounced);
 
-      window.addEventListener('beforeunload', stop);
+    threadInput.addEventListener("input", ()=>{
+      const n = clampThread(threadInput.value);
+      threadInput.value = n;
+      localStorage.setItem(LS_THREAD, String(n));
+    });
 
-      initTheme();
-      initIPBlock();
-      setRunningUI(false);
-    })();
+    toggleBtn.addEventListener("click", toggleRun);
+
+    ipInfoBtn.addEventListener("click", ()=>{
+      document.getElementById("ipCard").scrollIntoView({behavior:"smooth", block:"start"});
+    });
+
+    ipv6Btn.addEventListener("click", async ()=>{
+      try{
+        const res = await fetch("https://api64.ipify.org?format=json", {cache:"no-store"});
+        const d = await res.json();
+        alert(`当前出口地址：${d.ip || "未知"}\n仅显示IPv4模式已启用`);
+      }catch(e){
+        alert("IPV6检测：当前页面为仅IPv4展示模式");
+      }
+    });
+
+    applyThemeFromStorage();
+    initStoredValues();
+    updateButtonUI();
+    fetchIPv4CN();
+
+    window.addEventListener("beforeunload", ()=>{ if(running) stopAll(); });
   </script>
 </body>
 </html>
