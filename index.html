@@ -1,576 +1,328 @@
-<!doctype html>
-<html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="zh" class="js">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>流量消耗器</title>
-  <style>
-    :root{
-      --bg:#eef2f8;
-      --card:#ffffff;
-      --text:#1e293b;
-      --muted:#64748b;
-      --line:#d9e2f1;
-      --primary:#5b74ff;
-      --primary2:#6a83ff;
-      --danger:#ef4444;
-      --ok:#22c55e;
-      --inputBg:#ffffff;
-      --inputText:#0f172a;
-      --shadow:0 8px 24px rgba(2,8,23,.08);
-      --chipShadow:0 10px 20px rgba(91,116,255,.30);
-    }
-    body.dark{
-      --bg:#06132b;
-      --card:#0b1a37;
-      --text:#eaf1ff;
-      --muted:#b6c7ea;
-      --line:#2b3f69;
-      --primary:#6481ff;
-      --primary2:#7891ff;
-      --danger:#ff5c7a;
-      --ok:#34d399;
-      --inputBg:#102447;
-      --inputText:#f7fbff;
-      --shadow:0 10px 28px rgba(0,0,0,.40);
-      --chipShadow:0 10px 22px rgba(100,129,255,.45);
-    }
-
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
-    body{
-      background:var(--bg);
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei","Noto Sans SC",Arial,sans-serif;
-      transition:background .2s ease,color .2s ease;
-    }
-
-    .wrap{max-width:1040px;margin:22px auto 38px;padding:0 14px}
-
-    .topbar{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      box-shadow:var(--shadow);
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      gap:14px;
-    }
-    .brand{
-      font-weight:800;
-      font-size:20px;
-      letter-spacing:.2px;
-      color:var(--text);
-      opacity:.96;
-      white-space:nowrap;
-    }
-    .topnav{
-      margin-left:auto;
-      display:flex;
-      align-items:center;
-      gap:22px;
-      flex-wrap:wrap;
-    }
-    .topnav a{
-      color:var(--text);
-      text-decoration:none;
-      font-weight:700;
-      opacity:.93;
-      font-size:18px;
-    }
-
-    .icon-btn{
-      width:36px;height:36px;
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:var(--inputBg);
-      color:var(--text);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      transition:.2s ease;
-      padding:0;
-    }
-    .icon-btn:hover{transform:translateY(-1px)}
-    .moon,.sun{width:18px;height:18px;display:block}
-    body.dark .sun{display:block}
-    body.dark .moon{display:none}
-    body:not(.dark) .sun{display:none}
-    body:not(.dark) .moon{display:block}
-
-    .card{
-      margin-top:16px;
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:12px;
-      box-shadow:var(--shadow);
-      padding:18px;
-    }
-
-    .chip{
-      display:inline-block;
-      margin-bottom:14px;
-      background:var(--primary);
-      color:#fff;
-      border-radius:10px;
-      padding:8px 14px;
-      font-weight:800;
-      font-size:18px;
-      box-shadow:var(--chipShadow);
-    }
-
-    .label{
-      font-size:18px;
-      font-weight:800;
-      color:var(--text);
-      margin-bottom:8px;
-      line-height:1.3;
-    }
-
-    input[type="text"], input[type="number"]{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:8px;
-      background:var(--inputBg);
-      color:var(--inputText);
-      padding:12px;
-      font-size:18px;
-      outline:none;
-      transition:border-color .2s ease, background .2s ease, color .2s ease;
-    }
-    input[type="text"]:focus, input[type="number"]:focus{border-color:var(--primary)}
-    input::placeholder{color:var(--muted);opacity:1}
-
-    .hint{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:14px;
-      font-weight:600;
-      line-height:1.5;
-    }
-
-    .btn{
-      margin-top:14px;
-      width:100%;
-      border:1px solid transparent;
-      border-radius:8px;
-      padding:12px 14px;
-      font-size:22px;
-      font-weight:900;
-      cursor:pointer;
-      transition:.2s ease;
-      color:#fff;
-      background:linear-gradient(90deg,var(--primary),var(--primary2));
-    }
-    .btn.stop{
-      background:transparent;
-      color:var(--danger);
-      border-color:var(--danger);
-    }
-    .btn:hover{transform:translateY(-1px)}
-
-    .stats{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-    }
-    .stat{
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:color-mix(in srgb, var(--card) 85%, #ffffff 15%);
-      padding:12px;
-      min-height:92px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-    }
-    body.dark .stat{
-      background:color-mix(in srgb, var(--card) 78%, #0f2349 22%);
-    }
-    .stat .t{
-      color:var(--muted);
-      font-size:14px;
-      font-weight:700;
-    }
-    .stat .v{
-      color:var(--text);
-      font-size:36px;
-      font-weight:900;
-      line-height:1.1;
-      word-break:break-all;
-    }
-
-    .ip-table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:32px;
-    }
-    .ip-table tr + tr td{border-top:1px dashed var(--line)}
-    .ip-table td{
-      padding:10px 0;
-      vertical-align:top;
-      color:var(--text);
-      font-weight:700;
-    }
-    .ip-table td:first-child{
-      width:140px;
-      color:var(--muted);
-      font-weight:800;
-    }
-
-    .source{
-      margin-top:16px;
-      color:var(--muted);
-      font-size:26px;
-      font-weight:700;
-    }
-    .source a{color:var(--primary);text-decoration:none;font-weight:900}
-
-    @media (max-width:860px){
-      .topnav{gap:14px}
-      .topnav a{font-size:15px}
-      .stats{grid-template-columns:1fr}
-      .stat .v{font-size:28px}
-      .ip-table{font-size:16px}
-      .source{font-size:14px}
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">流量消耗器</div>
-      <div class="topnav">
-        <a href="javascript:void(0)" id="ipInfoBtn">IP归属查询</a>
-        <a href="javascript:void(0)" id="ipv6Btn">IPV6检测</a>
-        <button class="icon-btn" id="themeBtn" title="切换夜间模式" aria-label="切换夜间模式">
-          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3c0 .3-.01.59-.01.89A8 8 0 0 0 20.11 12c.3 0 .59-.01.89-.01z"/>
-          </svg>
-          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="chip">测速源</div>
-
-      <div class="label">测速地址（可直接输入自定义下载地址）</div>
-      <input id="sourceInput" list="sourceList" type="text" placeholder="请输入可直链下载地址，或从下拉中选择" />
-      <datalist id="sourceList">
-        <option value="https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4">朝夕光年游戏(打开网页默认首选项)</option>
-        <option value="https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js">BBC中文网</option>
-      </datalist>
-      <div class="hint">已合并“测速点 + 自定义地址”。你输入的地址会自动保存，下次打开网页直接可用。</div>
-
-      <div style="margin-top:14px" class="label">线程（1-32）</div>
-      <input id="threadInput" type="number" min="1" max="32" step="1" value="6" />
-
-      <button id="toggleBtn" class="btn">开始</button>
-
-      <div class="stats">
-        <div class="stat">
-          <div class="t">总流量</div>
-          <div class="v" id="totalText">0 B</div>
-        </div>
-        <div class="stat">
-          <div class="t">实时速度</div>
-          <div class="v" id="speedText">0 B/s</div>
-        </div>
-        <div class="stat">
-          <div class="t">实时带宽</div>
-          <div class="v" id="mbpsText">0 Mbps</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="ipCard">
-      <div class="chip">出口地址（仅IPv4）</div>
-      <table class="ip-table">
-        <tr>
-          <td>IPv4</td>
-          <td id="ipv4Text">加载中...</td>
-        </tr>
-        <tr>
-          <td>属地</td>
-          <td id="locText">加载中...</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="card">
-      <div class="chip">项目来源</div>
-      <div class="source">本页面基于开源项目：<a href="https://github.com/xinycai/traffic_deplete" target="_blank" rel="noopener">xinycai / traffic_deplete</a></div>
-    </div>
-  </div>
-
-  <script>
-    const DEFAULT_SOURCE = "https://lf5-j1gamecdn-cn.dailygn.com/obj/lf-game-lf/gdl_app_2682/1233880772355.mp4";
-    const BBC_SOURCE = "https://emp.bbci.co.uk/emp/dashjs/3.2.0-8/dash.all.min.js";
-
-    const LS_THEME = "traffic_theme_dark";
-    const LS_SOURCE = "traffic_custom_source";
-    const LS_THREAD = "traffic_thread";
-
-    const sourceInput = document.getElementById("sourceInput");
-    const threadInput = document.getElementById("threadInput");
-    const toggleBtn = document.getElementById("toggleBtn");
-    const totalText = document.getElementById("totalText");
-    const speedText = document.getElementById("speedText");
-    const mbpsText = document.getElementById("mbpsText");
-    const themeBtn = document.getElementById("themeBtn");
-    const ipInfoBtn = document.getElementById("ipInfoBtn");
-    const ipv6Btn = document.getElementById("ipv6Btn");
-
-    const ipv4Text = document.getElementById("ipv4Text");
-    const locText = document.getElementById("locText");
-
-    let running = false;
-    let controllers = [];
-    let timerId = null;
-    let totalBytes = 0;
-    let bytesInTick = 0;
-    let lastTickTs = 0;
-
-    function clampThread(v){
-      let n = parseInt(v,10);
-      if(Number.isNaN(n)) n = 1;
-      if(n < 1) n = 1;
-      if(n > 32) n = 32;
-      return n;
-    }
-
-    function formatBytes(b){
-      if(!Number.isFinite(b) || b <= 0) return "0 B";
-      const units = ["B","KB","MB","GB","TB"];
-      let i = 0, x = b;
-      while(x >= 1024 && i < units.length - 1){ x /= 1024; i++; }
-      const fixed = x >= 100 ? 0 : x >= 10 ? 1 : 2;
-      return `${x.toFixed(fixed)} ${units[i]}`;
-    }
-
-    function applyThemeFromStorage(){
-      const isDark = localStorage.getItem(LS_THEME) === "1";
-      if(isDark) document.body.classList.add("dark");
-      else document.body.classList.remove("dark");
-    }
-
-    function saveSourceDebounced(){
-      localStorage.setItem(LS_SOURCE, sourceInput.value.trim());
-    }
-
-    function initStoredValues(){
-      const savedSource = localStorage.getItem(LS_SOURCE);
-      sourceInput.value = (savedSource && savedSource.trim()) ? savedSource.trim() : DEFAULT_SOURCE;
-
-      const savedThread = clampThread(localStorage.getItem(LS_THREAD) || 6);
-      threadInput.value = savedThread;
-    }
-
-    function updateButtonUI(){
-      if(running){
-        toggleBtn.textContent = "停止";
-        toggleBtn.classList.add("stop");
-      }else{
-        toggleBtn.textContent = "开始";
-        toggleBtn.classList.remove("stop");
-      }
-    }
-
-    function stopAll(){
-      running = false;
-      updateButtonUI();
-      controllers.forEach(c => c.abort());
-      controllers = [];
-      if(timerId){
-        clearInterval(timerId);
-        timerId = null;
-      }
-    }
-
-    async function workerLoop(url, signal){
-      while(!signal.aborted){
-        try{
-          const resp = await fetch(url, { cache:"no-store", mode:"cors", signal });
-          if(!resp || !resp.body){
-            await new Promise(r => setTimeout(r, 150));
-            continue;
-          }
-          const reader = resp.body.getReader();
-          while(true){
-            const {done, value} = await reader.read();
-            if(done || signal.aborted) break;
-            if(value && value.byteLength){
-              totalBytes += value.byteLength;
-              bytesInTick += value.byteLength;
-            }
-          }
-        }catch(e){
-          if(signal.aborted) break;
-          await new Promise(r => setTimeout(r, 220));
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>流量消耗器</title>
+    <meta name="keywords" content="IP查询,IP归属查询,在线测速,网速测试,多地IP查询,流量消耗器">
+    <meta name="description" content="测试您的网速，多地查询您的IP地址，同时具备网络延迟实时检测">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <link rel="stylesheet" href="res/dashlite.css">
+    <link rel="stylesheet" href="res/style.css">
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="stylesheet" href="res/layer.css" id="layuicss-layer">
+    <script src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        .stat {
+            width: 100%;
+            column-gap: 1rem;
+            padding: 1rem 1.5rem;
         }
-      }
-    }
-
-    function startRun(){
-      let url = (sourceInput.value || "").trim();
-      if(!url) url = DEFAULT_SOURCE;
-      sourceInput.value = url;
-      localStorage.setItem(LS_SOURCE, url);
-
-      const threads = clampThread(threadInput.value);
-      threadInput.value = threads;
-      localStorage.setItem(LS_THREAD, String(threads));
-
-      running = true;
-      updateButtonUI();
-
-      bytesInTick = 0;
-      lastTickTs = performance.now();
-
-      controllers = [];
-      for(let i=0;i<threads;i++){
-        const c = new AbortController();
-        controllers.push(c);
-        workerLoop(url, c.signal);
-      }
-
-      timerId = setInterval(()=>{
-        const now = performance.now();
-        const dt = Math.max((now - lastTickTs) / 1000, 0.001);
-        const bps = bytesInTick / dt;
-        const mbps = (bps * 8) / 1000 / 1000;
-
-        totalText.textContent = formatBytes(totalBytes);
-        speedText.textContent = `${formatBytes(bps)}/s`;
-        mbpsText.textContent = `${mbps.toFixed(2)} Mbps`;
-
-        bytesInTick = 0;
-        lastTickTs = now;
-      }, 1000);
-    }
-
-    function toggleRun(){
-      if(running) stopAll();
-      else startRun();
-    }
-
-    async function fetchIPv4CN(){
-      const ipApis = [
-        "https://api64.ipify.org?format=json",
-        "https://api.ip.sb/jsonip",
-        "https://ifconfig.co/json"
-      ];
-      let ip = "";
-      for(const api of ipApis){
-        try{
-          const res = await fetch(api, {cache:"no-store"});
-          if(!res.ok) continue;
-          const d = await res.json();
-          ip = d.ip || d.ip_address || "";
-          if(ip) break;
-        }catch(e){}
-      }
-      if(!ip){
-        ipv4Text.textContent = "获取失败";
-        locText.textContent = "无法获取IPv4";
-        return;
-      }
-      ipv4Text.textContent = ip;
-
-      const locApis = [
-        `https://whois.pconline.com.cn/ipJson.jsp?ip=${encodeURIComponent(ip)}&json=true`,
-        `https://ip-api.com/json/${encodeURIComponent(ip)}?lang=zh-CN`,
-        `https://ipwho.is/${encodeURIComponent(ip)}?lang=zh`
-      ];
-
-      for(const api of locApis){
-        try{
-          const res = await fetch(api, {cache:"no-store"});
-          if(!res.ok) continue;
-
-          if(api.includes("pconline")){
-            const t = await res.text();
-            const j = JSON.parse(t);
-            const p = (j.pro || "").trim();
-            const c = (j.city || "").trim();
-            const addr = `${p}${c}`.replace(/\s+/g,"");
-            if(addr && addr !== "局域网" && addr !== "CZ88.NET"){
-              locText.textContent = addr;
-              return;
+        .stat-title {
+            white-space: nowrap;
+            opacity: .6;
+        }
+        .stat-value {
+            white-space: nowrap;
+            grid-column-start: 1;
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 2.5rem
+        }
+        .nk-menu-item a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="nk-body npc-invest bg-lighter no-touch nk-nio-theme" style="cursor:pointer">
+    <div class="nk-wrap ">
+        <div class="nk-header nk-header-fluid nk-header-fixed is-light">
+            <div class="container-xl">
+                <div class="nk-header-wrap link-between">
+                    <div class="nk-menu-trigger mr-sm-2 d-lg-none">
+                        <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav"><em class="icon ni ni-menu"></em></a>
+                    </div>
+                    <div class="nk-header-brand">
+                        <a href="#" class="logo-link text-base"><img src="images/流量.png" class="hide-mb-sm">流量消耗器</a>
+                    </div>
+                    <div class="nk-header-tools nk-header-menu" data-content="headerNav">
+                        <div class="nk-header-mobile">
+                            <div class="nk-header-brand">
+                                <a href="/" class="logo-link text-base">
+                                    <span class="nio-version" style="font-size: 21px;position: inherit;">流量消耗器</span>
+                                </a>
+                            </div>
+                            <div class="nk-menu-trigger mr-n2">
+                                <a href="#" class="nk-nav-toggle nk-quick-nav-icon" data-target="headerNav"><em class="icon ni ni-arrow-left"></em></a>
+                            </div>
+                        </div>
+                        <ul class="nk-menu nk-menu-main">
+                            <li class="nk-menu-item">
+                                <a href="https://ip.ipgg.cn" class="nk-menu-link nk-ibx-action-item">
+                                    <em class="icon ni ni-map"></em>
+                                    <span class="nk-menu-text">IP归属查询</span>
+                                </a>
+                            </li>
+                            <li class="nk-menu-item">
+                                <a href="https://v6test.ipgg.cn" class="nk-menu-link nk-ibx-action-item">
+                                    <em class="icon ni ni-network"></em>
+                                    <span class="nk-menu-text">IPV6检测</span>
+                                </a>
+                            </li>
+                            <li class="nk-menu-item">
+                                <a href="https://blog.quzei.com" class="nk-menu-link nk-ibx-action-item">
+                                    <em class="icon ni ni-book-read"></em>
+                                    <span class="nk-menu-text">博客</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="no-gutters">
+                        <ul class="nk-quick-nav">
+                            <li class="dropdown">
+                                <a href="javascript:;" class="progress-rating dark-switch ">
+                                    <span class="nk-menu-icon">
+                                        <em class="icon ni ni-moon"></em>
+                                        <em class="icon ni ni-sun d-none"></em>
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="nk-content nk-content-lg nk-content-fluid">
+            <div id="app" class="container-xl">
+                <div class="col-sm-12 col-md-10 col-xl-8 center-block">
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-info"></em><span class="nk-menu-text font-weight-bold">工具说明</span></div>
+                            <div class="accordion-inner">
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#9cabff" style="background: rgb(156, 171, 255);"></span>&nbsp;<span>虽支持可自定义地址，但无法请求跨域链接</span></div>
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#ffa9ce" style="background: rgb(255, 169, 206);"></span>&nbsp;<span>速度不满意？请尝试手动切换节点，加大运行线程</span></div>
+                                <div class="title"><span class="dot dot-lg sq" data-bg="#f98c45" style="background: rgb(249, 140, 69);"></span>&nbsp;<span>消耗机场流量，建议使用海外节点，速度可能会更快</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-preview">
+                        <div class="card-inner mt-3">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-setting"></em><span class="nk-menu-text font-weight-bold">测试设置</span></div>
+                            <div class="form-group"><label class="form-label">测试地址</label>
+                                <div class="form-control-wrap">
+                                    <select id='select' onchange="document.getElementById('link').value=this.options[this.selectedIndex].value;setCookie('select',this.selectedIndex,365);" type="text" class="form-control">
+                                        <option value="" id="diy">自定义</option>
+                                        <option selected="selected" value="https://issuecdn.baidupcs.com/issue/netdisk/apk/BaiduNetdiskSetup_wap_share.apk">百度CDN [高速]</option>
+                                        <option value="https://img.alicdn.com/imgextra/i1/O1CN01xA4P9S1JsW2WEg0e1_!!6000000001084-2-tps-2880-560.png">阿里CDN</option>
+                                        <option value="https://wegame.gtimg.com/g.55555-r.c4663/wegame-home/sc02-03.514d7db8.png">腾讯CDN</option>
+                                        <option value="https://lf9-cdn-tos.bytecdntp.com/cdn/yuntu-index/1.0.4/case/maiteng/detailbg.png">字节跳动</option>
+                                        <option value="https://pic-bucket.ws.126.net/photo/0003/2022-04-24/H5N2082C00AJ0003NOS.jpg">网易</option>
+                                        <option value="https://wwwstatic.vivo.com.cn/vivoportal/files/resource/funtouch/1651200648928/images/os2-jude-video.mp4">Vivo</option>
+                                        <option value="https://img.cmvideo.cn/publish/noms/2022/10/14/1O3VIGPVP6HTS.jpg">咪咕视频</option>
+                                        <option value="https://img.mcloud.139.com/material_prod/material_media/20221128/1669626861087.png">和彩云</option>
+                                        <option value="https://desk.ctyun.cn/desktop/software/clientsoftware/download/ff3e71dcc21152307f54700c62e5aef6">天翼云</option>
+                                        <option value="https://i2.hdslb.com/bfs/openplatform/202506/ndIMphTF1750406775833.png">哔哩哔哩</option>
+                                        <option value="https://cachefly.cachefly.net/100mb.test">Cachefly Test [Global]</option>
+                                        <option value="https://speed.cloudflare.com/__down?bytes=1073741824">Cloudflare Speed [Global]</option>
+                                    </select>
+                                    <input value="" oninput="document.getElementById('select').selectedIndex=0;document.getElementById('diy').value=this.value;setCookie('diy',this.value,365);setCookie('select',0,365);" type="text" id="link" placeholder="请输入下载链接" autocomplete="off" class="form-control">
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="form-label">线程</label>
+                                <div class="form-control-wrap number-spinner-wrap"><button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.min)thread.value--;" class="btn btn-icon btn-outline-primary number-spinner-btn number-minus"><em class="icon ni ni-minus"></em></button> <input onchange="var self= document.getElementById('thread');if(self.value<self.min)self.value=self.min;if(self.value>self.max)self.value=self.max" id='thread' type="number" min="1" max="32" value=1 class="form-control number-spinner"> <button onclick="var thread=document.getElementById('thread');if(thread.value!=thread.max)thread.value++;" class="btn btn-icon btn-outline-primary number-spinner-btn number-plus"><em class="icon ni ni-plus"></em></button></div>
+                            </div>
+                            <div class="form-group" id="back">
+                                <div class="preview-block">
+                                    <div class="custom-control custom-switch checked"><input onclick="musiccontrol(this)" type="checkbox" id="customSwitch2" class="custom-control-input"> <label for="customSwitch2" class="custom-control-label">保持后台运行</label></div>
+                                </div>
+                            </div>
+                            <button onclick="botton_clicked();" type="button" id="do" class="btn btn-dim btn-outline-secondary btn-block card-link">开始</button>
+                            <div class="row mt-4">
+                                <div class="col-sm-12 col-md-4 border stat" onclick='inputMax=prompt("请输入流量上限(GB)\n不填为不设置上限","");if(inputMax !== null)setMax(inputMax)'>
+                                    <div class="text-dark"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg></div>
+                                    <div class="stat-title">总流量 <a id="showMax"></a></div>
+                                    <div class="stat-value" id="total">-</div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 border stat">
+                                    <div class="text-info"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16.469,8.924l-2.414,2.413c-0.156,0.156-0.408,0.156-0.564,0c-0.156-0.155-0.156-0.408,0-0.563l2.414-2.414c1.175-1.175,1.175-3.087,0-4.262c-0.57-0.569-1.326-0.883-2.132-0.883s-1.562,0.313-2.132,0.883L9.227,6.511c-1.175,1.175-1.175,3.087,0,4.263c0.288,0.288,0.624,0.511,0.997,0.662c0.204,0.083,0.303,0.315,0.22,0.52c-0.171,0.422-0.643,0.17-0.52,0.22c-0.473-0.191-0.898-0.474-1.262-0.838c-1.487-1.485-1.487-3.904,0-5.391l2.414-2.413c0.72-0.72,1.678-1.117,2.696-1.117s1.976,0.396,2.696,1.117C17.955,5.02,17.955,7.438,16.469,8.924 M10.076,7.825c-0.205-0.083-0.437,0.016-0.52,0.22c-0.083,0.205,0.016,0.437,0.22,0.52c0.374,0.151,0.709,0.374,0.997,0.662c1.176,1.176,1.176,3.088,0,4.263l-2.414,2.413c-0.569,0.569-1.326,0.883-2.131,0.883s-1.562-0.313-2.132-0.883c-1.175-1.175-1.175-3.087,0-4.262L6.51,9.227c0.156-0.155,0.156-0.408,0-0.564c-0.156-0.156-0.408-0.156-0.564,0l-2.414,2.414c-1.487,1.485-1.487,3.904,0,5.391c0.72,0.72,1.678,1.116,2.696,1.116s1.976-0.396,2.696-1.116l2.414-2.413c1.487-1.486,1.487-3.905,0-5.392C10.974,8.298,10.55,8.017,10.076,7.825"></path></svg></div>
+                                    <div class="stat-title" id="describe">实时速度</div>
+                                    <div class="stat-value text-info" id="speed">-</div>
+                                </div>
+                                <div class="col-sm-12 col-md-4 border stat">
+                                    <div class="text-dark"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-15 w-15 float-right pt-3"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
+                                    <div class="stat-title">带宽</div>
+                                    <div class="stat-value" id="mbps">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-speed"></em><span class="nk-menu-text font-weight-bold">实时图表</span></div>
+                            <br>
+                            <ul class="nk-ecwg8-legends">
+                                <li><div class="title"><span class="dot" data-bg="#536fc4" style="background: rgb(83, 111, 196);"></span>&nbsp;速 率</div></li>
+                                <li><div class="title"><span class="dot" data-bg="#90ca74" style="background: rgb(144, 202, 116);"></span>&nbsp;延 迟</div></li>
+                            </ul>
+                            <div id="dv" style="position: relative;height: 300px;overflow: hidden;"></div>
+                        </div>
+                    </div>
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="nya-title nk-ibx-action-item progress-rating"><em class="icon ni ni-location"></em><span class="nk-menu-text font-weight-bold">出口地址</span></div>
+                            <div class="accordion-inner">
+                                <li class="nk-menu-item">
+                                    <a class="text-waring" style="pointer-events:none;">国内 IPv4</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="ipcn_v4">Loading...</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a class="text-waring" style="pointer-events:none;">国内 IPv6</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="ipcn_v6">Loading...</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a style="pointer-events:none;">海外 IPv4</a>
+                                    <a style="pointer-events:none;float: right;" id="ipgb_v4">Loading...</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a style="pointer-events:none;">海外 IPv6</a>
+                                    <a style="pointer-events:none;float: right;" id="ipgb_v6">Loading...</a>
+                                </li>
+                                <hr>
+                                <li class="nk-menu-item">
+                                    <a class="text-waring" style="pointer-events:none;">百度连通性</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="laycn">-ms</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a style="pointer-events:none;">Cloudflare连通性</a>
+                                    <a style="pointer-events:none;float: right;" id="laygb">-ms</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a class="text-waring" style="pointer-events:none;">Github连通性</a>
+                                    <a class="text-waring" style="pointer-events:none;float: right;" id="github">-ms</a>
+                                </li>
+                                <li class="nk-menu-item">
+                                    <a style="pointer-events:none;">Youtube连通性</a>
+                                    <a style="pointer-events:none;float: right;" id="youtube">-ms</a>
+                                </li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <audio controls id="music" loop="loop" style="display:none">
+        <source src="res/background.mp3" type="audio/mpeg">
+    </audio>
+    <script>
+        var lastTouchEnd = 0
+        if (!!('ontouchstart' in window || navigator.maxTouchPoints)) {
+            document.documentElement.addEventListener(
+                'touchend',
+                function (event) {
+                    var now = Date.now()
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault()
+                    }
+                    lastTouchEnd = now
+                }, {
+                passive: false
             }
-          }else{
-            const j = await res.json();
-            if(api.includes("ip-api")){
-              const country = (j.country || "").trim();
-              const region = (j.regionName || "").trim();
-              const city = (j.city || "").trim();
-              const isp = (j.isp || "").trim();
-              const arr = [country, region, city, isp].filter(Boolean);
-              if(arr.length){
-                locText.textContent = arr.join(" ");
-                return;
-              }
-            }else{
-              const country = (j.country || "").trim();
-              const region = (j.region || "").trim();
-              const city = (j.city || "").trim();
-              const conn = j.connection && j.connection.isp ? String(j.connection.isp).trim() : "";
-              const arr = [country, region, city, conn].filter(Boolean);
-              if(arr.length){
-                locText.textContent = arr.join(" ");
-                return;
-              }
+            )
+        }
+
+        function show(num, des, flo) {
+            var cnum = num;
+            var total_index = 0;
+            while (cnum >= 1024) {
+                if (total_index == des.length - 1) break;
+                cnum = cnum / 1024;
+                total_index++;
             }
-          }
-        }catch(e){}
-      }
+            return cnum.toFixed(flo[total_index]) + des[total_index];
+        }
 
-      locText.textContent = "未知地区";
-    }
+        function musiccontrol(botton) {
+            if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+                if (document.getElementById("customSwitch2").checked) document.getElementById("music").play()
+                else document.getElementById("music").pause()
+            }
+        }
+        document.getElementById("music").addEventListener("pause", function () {
+            document.title = '流量消耗器'
+            if (run && !visibl) botton_clicked()
+            document.getElementById("customSwitch2").checked = false
+        })
+        document.getElementById("music").addEventListener("play", function () {
+            if (!(run || visibl)) botton_clicked()
+            document.getElementById("customSwitch2").checked = true
+        })
 
-    themeBtn.addEventListener("click", ()=>{
-      document.body.classList.toggle("dark");
-      localStorage.setItem(LS_THEME, document.body.classList.contains("dark") ? "1" : "0");
-    });
+        function setCookie(cname, cvalue, exdays) {
+            var d = new Date();
+            d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+            var expires = "expires=" + d.toGMTString();
+            document.cookie = cname + "=" + cvalue + "; " + expires;
+        }
 
-    sourceInput.addEventListener("input", saveSourceDebounced);
-    sourceInput.addEventListener("change", saveSourceDebounced);
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i].trim();
+                if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+            }
+            return "";
+        }
+        document.getElementById('diy').value = getCookie("diy");
+        if (getCookie("select")) document.getElementById('select').selectedIndex = getCookie("select");
+        var selector = document.getElementById("select");
+        document.getElementById('link').value = selector.options[selector.selectedIndex].value;
 
-    threadInput.addEventListener("input", ()=>{
-      const n = clampThread(threadInput.value);
-      threadInput.value = n;
-      localStorage.setItem(LS_THREAD, String(n));
-    });
+        var Maximum = 0
+        setMax(getCookie('Max'))
 
-    toggleBtn.addEventListener("click", toggleRun);
+        function setMax(inputMax) {
+            if (inputMax > 0) {
+                setCookie("Max", inputMax, 365)
+                Maximum = inputMax * 1073741824
+                document.getElementById("showMax").innerText = '/' + show(Maximum, ['B', 'KB', 'MB', 'GB', 'TB', 'PB'], [0, 0, 1, 2, 2, 2])
+            } else {
+                Maximum = 0
+                document.getElementById("showMax").innerText = ''
+                setCookie("Max", 0, 365)
+            }
+        }
+    </script>
+    <script src='main.js?5'></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/layer.js"></script>
+    <script src="js/nioapp.min.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        const ipTargets = [
+            { id: 'ipcn_v4', url: 'https://v4.ipgg.cn' },
+            { id: 'ipcn_v6', url: 'https://v6.ipgg.cn' },
+            { id: 'ipgb_v4', url: 'https://v4.wuxie.de' },
+            { id: 'ipgb_v6', url: 'https://v6.wuxie.de' }
+        ];
 
-    ipInfoBtn.addEventListener("click", ()=>{
-      document.getElementById("ipCard").scrollIntoView({behavior:"smooth", block:"start"});
-    });
-
-    ipv6Btn.addEventListener("click", async ()=>{
-      try{
-        const res = await fetch("https://api64.ipify.org?format=json", {cache:"no-store"});
-        const d = await res.json();
-        alert(`当前出口地址：${d.ip || "未知"}\n仅显示IPv4模式已启用`);
-      }catch(e){
-        alert("IPV6检测：当前页面为仅IPv4展示模式");
-      }
-    });
-
-    applyThemeFromStorage();
-    initStoredValues();
-    updateButtonUI();
-    fetchIPv4CN();
-
-    window.addEventListener("beforeunload", ()=>{ if(running) stopAll(); });
-  </script>
+        ipTargets.forEach(target => {
+            fetch(target.url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(text => {
+                    document.getElementById(target.id).innerText = text.trim();
+                })
+                .catch(error => {
+                    document.getElementById(target.id).innerText = 'NULL';
+                    console.error('Fetching IP failed:', error);
+                });
+        });
+    </script>
 </body>
 </html>
